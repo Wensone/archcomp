@@ -97,6 +97,6 @@ int sc_commandDecode(int value, int *command, int *operand) {
         return COMMAND_ERROR;
     }
     *command = (int) (value >> 7);
-    *operand = (int) (value & 0xFF);
+    *operand = (int) (value & 0177);
     return SUCCESS;
 }

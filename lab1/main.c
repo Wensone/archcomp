@@ -7,19 +7,25 @@ void print(int i, int n){
 
 int main(){
 	int value;
-	int command;
-	int operand;
+	int command = 0x33;
+	int operand = 0x59;
 	char *fileSave = "memSave";
 	char *fileLoad = fileSave;
 
 	sc_memoryInit();
-	printf("Mem init\n");
+	printf("Mem init: "); 
+	print(0, 5); 
+	printf(" ... ");
+	print(sizeArray - 5, sizeArray);
+	printf("\n");
 
 	sc_memorySet(0, 6);
-	printf("Mem set. Address: 0. Value: 6\n");
+	sc_memorySet(6, 0);
+	printf("Mem set.Swap value Address: 0. Value: 6\n");
+	printf("Array after swap value: "); print(0, 8);
 
 	sc_memoryGet(0, &value);
-	printf("Value after using memGet: %d\n", value);
+	printf("\nValue after using memGet: %d\n", value);
 
 	sc_memorySave(fileSave);
 	printf("Mem has been save in file %s\n", fileSave);
@@ -36,13 +42,11 @@ int main(){
 	sc_regGet(FLAG_M, &value);
 	printf("FLAG set value %d\n", value);
 
-	command = 0x33;
-	operand = 59;
 	sc_commandEncode(command, operand, &value);
 	printf("Encode Command: 0x33 and Operand: 59 in value: %d\n", value);
 
 	sc_commandDecode(value, &command, &operand);
-	printf("Decode Comand: %d. Operand: %d\n", command, operand);
+	printf("Decode Comand: %x Operand: %x\n", command, operand);
 
 
 	return 0;
