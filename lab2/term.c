@@ -7,17 +7,6 @@ uint8_t mt_clscr(){
 
 uint8_t mt_getscreensize(uint16_t *rows, uint16_t *cols)
 {
-	struct winsize ws;
-	if (!ioctl(STDOUT_FILENO, TIOCGWINSZ, &w)) {
-		*rows = (uint16_t) ws.ws_row;
-		*col = (uint16_t) ws.ws_col;
-		return SUCCESS;
-	}
-	return ERROR;
-}
-
-uint8_t mt_getscreensize(uint16_t *rows, uint16_t *cols)
-{
     struct winsize ws;
 
     if (!ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws)){
