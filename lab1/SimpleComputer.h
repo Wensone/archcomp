@@ -17,7 +17,7 @@
 uint16_t ram[SIZE];
 uint16_t Flags;
 
-enum ERROR{
+enum ERROR_SC{
 	COMMAND_ERROR = -3,
 	FILE_ERROR = -2,
 	INCORRECT_MEMORY = -1,
