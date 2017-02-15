@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <termios.h>
 #include <sys/ioctl.h>
-
 #include <unistd.h>
 
 enum ERROR_TERM {
@@ -25,7 +24,7 @@ enum COLORS_TERM {
 	clr_default = 9
 };
 
-uint8_t mt_clscr ();
+uint8_t mt_clscr();
 uint8_t mt_gotoXY(uint16_t, uint16_t);
 uint8_t mt_getscreensize(uint16_t *, uint16_t *);
 uint8_t mt_setfgcolor(enum COLORS_TERM);

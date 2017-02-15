@@ -35,6 +35,7 @@ uint8_t mt_gotoXY(uint16_t x, uint16_t y)
 
 uint8_t mt_setfgcolor(enum COLORS_TERM color){
     printf("\E[3%dm", color);
+
     if(color < clr_black || color > clr_default){
         return ERROR;
     }
