@@ -20,6 +20,7 @@ enum COLORS_TERM {
 	clr_light_blue,
 	clr_default
 }
+
 uint8_t mt_clscr ();
 uint8_t mt_gotoXY(uint16_t, uint16_t);
 uint8_t mt_getscreensize(uint16_t *, uint16_t *);
