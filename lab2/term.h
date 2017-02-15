@@ -6,7 +6,7 @@
 
 enum ERROR_TERM {
 	ERROR = -1,
-	SUCCES = 0
+	SUCCESS = 0
 }
 
 enum COLORS_TERM {
@@ -23,7 +23,7 @@ enum COLORS_TERM {
 uint8_t mt_clscr ();
 uint8_t mt_gotoXY(uint16_t, uint16_t);
 uint8_t mt_getscreensize(uint16_t *, uint16_t *);
-uint8_t mt_setfgcolor(enum COLORS_TERM);
-uint8_t	mt_setbgcolor(enum COLORS_TERM);
+uint8_t mt_setfgcolor(enum);
+uint8_t	mt_setbgcolor(enum);
 
 #endif // TERM_H
