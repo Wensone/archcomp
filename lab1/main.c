@@ -2,21 +2,21 @@
 
 void print(int i, int n){
 	for(; i < n; i++)
-		printf("%d ", scmemory[i]);
+		printf("%d ", ram[i]);
 }
 
 int main(){
-	int value;
-	int command = 0x33;
-	int operand = 0x59;
+	uint16_t value;
+	uint8_t command = 0x33;
+	uint8_t operand = 0x59;
 	char *fileSave = "memSave";
 	char *fileLoad = fileSave;
 
 	sc_memoryInit();
-	printf("Mem init: "); 
-	print(0, 5); 
+	printf("Mem init: ");
+	print(0, 5);
 	printf(" ... ");
-	print(sizeArray - 5, sizeArray);
+	print(SIZE - 5, SIZE);
 	printf("\n");
 
 	sc_memorySet(0, 6);
@@ -39,7 +39,7 @@ int main(){
 	sc_regSet(FLAG_M, 1);
 	printf("Flag init 1\n");
 
-	sc_regGet(FLAG_M, &value);
+	sc_regGet(FLAG_M, (uint8_t *)&value);
 	printf("FLAG set value %d\n", value);
 
 	sc_commandEncode(command, operand, &value);

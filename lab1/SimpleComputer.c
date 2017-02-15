@@ -1,57 +1,57 @@
 #include "SimpleComputer.h"
 
-int sc_memoryInit(){
+uint8_t sc_memoryInit(){
 	int i = 0;
-	for(i = 0; i < sizeArray; i++){
-		*(scmemory + i) = 0 + i;
+	for(i = 0; i < SIZE; i++){
+		*(ram + i) = 0 + i;
 	}
 	return SUCCESS;
 }
 
-int sc_memorySet(int address, int value){
-	if(address < 0 || address >= sizeArray)
+uint8_t sc_memorySet(uint8_t address, uint16_t value){
+	if(address < 0 || address >= SIZE)
 		return INCORRECT_MEMORY;
 
-	*(scmemory + address) = value;
+	*(ram + address) = value;
 
 	return SUCCESS;
 }
 
-int sc_memoryGet(int address, int *value){
-	if(address < 0 || address >= sizeArray)
+uint8_t sc_memoryGet(uint8_t address, uint16_t *value){
+	if(address < 0 || address >= SIZE)
 		return INCORRECT_MEMORY;
 
-	*value = *(scmemory + address);
+	*value = *(ram + address);
 
 	return SUCCESS;
 }
 
-int sc_memorySave(char *filename){
+uint8_t sc_memorySave(char *filename){
 	FILE *file = fopen(filename, "wb");
 	if(!file) FILE_ERROR;
 
-	fwrite(scmemory, sizeof(int), sizeArray, file);
+	fwrite(ram, sizeof(int), SIZE, file);
 
 	fclose(file);
 	return SUCCESS;
 }
 
-int sc_memoryLoad(char *filename){
+uint8_t sc_memoryLoad(char *filename){
 	FILE *file = fopen(filename, "rb");
 	if(!file) return FILE_ERROR;
 
-	fread(scmemory, sizeof(int), sizeArray, file);
+	fread(ram, sizeof(int), SIZE, file);
 
 	fclose(file);
 	return SUCCESS;
 }
 
-int sc_regInit(){
+uint8_t sc_regInit(){
 	Flags = 0;
 	return SUCCESS;
 }
 
-int sc_regSet(int reg, int value) {
+uint8_t sc_regSet(uint8_t reg, uint8_t value) {
     if ((reg != FLAG_E) && (reg != FLAG_M) && (reg != FLAG_P) &&
             (reg != FLAG_T) && (reg != FLAG_0)) {
         return INCORRECT_MEMORY;
@@ -69,7 +69,7 @@ int sc_regSet(int reg, int value) {
 
 }
 
-int sc_regGet(int reg, int *value) {
+uint8_t sc_regGet(uint8_t reg, uint8_t *value) {
     if ((reg != FLAG_E) && (reg != FLAG_M) && (reg != FLAG_P) &&
         (reg != FLAG_T) && (reg != FLAG_0)  ) {
         return COMMAND_ERROR;
@@ -79,7 +79,7 @@ int sc_regGet(int reg, int *value) {
     return SUCCESS;
 }
 
-int sc_commandEncode(int command, int operand, int *value) {
+uint8_t sc_commandEncode(uint8_t command, uint8_t operand, uint16_t *value) {
     if (command < 0 || command > 127 || operand < 0 || operand > 127) {
         return COMMAND_ERROR;
     }
@@ -92,7 +92,7 @@ int sc_commandEncode(int command, int operand, int *value) {
     return SUCCESS;
 }
 
-int sc_commandDecode(int value, int *command, int *operand) {
+uint8_t sc_commandDecode(uint16_t value, uint8_t *command, uint8_t *operand) {
     if (value >> 15 != 0x0) {
         return COMMAND_ERROR;
     }
