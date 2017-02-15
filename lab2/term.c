@@ -19,10 +19,10 @@ uint8_t mt_getscreensize(uint16_t *rows, uint16_t *cols)
     return ERROR;
 }
 
-uint8_t mt_gotoXY(int x, int y)
+uint8_t mt_gotoXY(uint16_t x, uint16_t y)
 {
-	uint8_t rows;
-    uint8_t cols;
+	uint16_t rows;
+    uint16_t cols;
 	if (mt_getscreensize(&rows, &cols)) {
 		return ERROR;
 	}
@@ -33,8 +33,8 @@ uint8_t mt_gotoXY(int x, int y)
 	return ERROR;
 }
 
-uint8_t mt_setfgcolor(COLORS_TERM color){
-    printf("\E[3%dm");
+uint8_t mt_setfgcolor(enum COLORS_TERM color){
+    printf("\E[3%dm", color);
     if(color < clr_black || color > clr_default){
         return ERROR;
     }
@@ -42,7 +42,7 @@ uint8_t mt_setfgcolor(COLORS_TERM color){
     return SUCCESS;
 }
 
-uint8_t mt_setbgcolor(COLORS_TERM color){
+uint8_t mt_setbgcolor(enum COLORS_TERM color){
     printf("\E[4%dm", color);
     if(color < clr_black || color > clr_default){
         return ERROR;

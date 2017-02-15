@@ -3,11 +3,15 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <termios.h>
+#include <sys/ioctl.h>
+
+#include <unistd.h>
 
 enum ERROR_TERM {
 	ERROR = -1,
 	SUCCESS = 0
-}
+};
 
 enum COLORS_TERM {
 	clr_black,
@@ -19,12 +23,12 @@ enum COLORS_TERM {
 	clr_cyan,
 	clr_light_blue,
 	clr_default
-}
+};
 
 uint8_t mt_clscr ();
 uint8_t mt_gotoXY(uint16_t, uint16_t);
 uint8_t mt_getscreensize(uint16_t *, uint16_t *);
-uint8_t mt_setfgcolor(enum);
-uint8_t	mt_setbgcolor(enum);
+uint8_t mt_setfgcolor(enum COLORS_TERM);
+uint8_t	mt_setbgcolor(enum COLORS_TERM);
 
 #endif // TERM_H
