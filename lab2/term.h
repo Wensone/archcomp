@@ -22,7 +22,7 @@ enum COLORS_TERM {
 	clr_magenta,
 	clr_cyan,
 	clr_light_blue,
-	clr_default
+	clr_default = 9
 };
 
 uint8_t mt_clscr ();
