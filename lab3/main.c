@@ -1,7 +1,6 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include "graph.h"
-
 char bigchar_plus[64] = {
         0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 1, 1, 0, 0, 0,
@@ -260,13 +259,14 @@ int main()
     }
     uint32_t ch[count * 2];
 
+    lseek(file, 0, SEEK_SET);
     if (ERROR == bc_bigcharread(file, ch, count, &count)) {
         fprintf(stderr, "read\n");
         return -1;
     }
 
     for (int i = 0; i < 34; i +=2) {
-        if (ERROR == bc_printbigchar(ch + i, _x, _y, clr_cyan, clr_green)) return -3;
+        if (ERROR == bc_printbigchar(ch + i, _x, _y, clr_red, clr_green)) return -3;
         _x += 10;
         if (_x == 80) {
             _y += 9;

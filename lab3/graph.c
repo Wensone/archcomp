@@ -109,12 +109,10 @@ enum ERROR_TERM bc_bigcharread(int fd, uint32_t *big, int need_count, int *count
 	err = (int) read(fd, &n, sizeof(int));
 	if (err == -1)
 		return ERROR;
-    printf("%d", n);
-	/*cnt = (int) read(fd, big, need_count * sizeof(uint32_t) * 2);
+	cnt = (int) read(fd, big, need_count * sizeof(uint32_t) * 2);
 	if (cnt == -1)
 		return ERROR;
 	*count = cnt / (sizeof(int) * 2);
-*/
 	return SUCCESS;
 }
 
@@ -125,9 +123,8 @@ enum ERROR_TERM bc_bigcharwrite(int fd, uint32_t *big, int count)
 	err = (int) write(fd, &count, sizeof(int));
 	if (err == -1)
 		return ERROR;
-	/*err = (int) write(fd, big, count * (sizeof(uint32_t)) * 2);
+	err = (int) write(fd, big, count * (sizeof(uint32_t)) * 2);
 	if (err == -1)
 		return ERROR;
-*/
 	return SUCCESS;
 }
