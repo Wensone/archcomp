@@ -3,7 +3,6 @@
 //
 
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -36,12 +35,12 @@ typedef enum keys {
     no_key
 } KEYS;
 
-uint8_t rk_readkey(KEYS *);
+enum ERRORS rk_readkey(KEYS *);
 
-uint8_t rk_mytermsave();
+enum ERRORS rk_mytermsave();
 
-uint8_t rk_mytermstore();
+enum ERRORS rk_mytermstore();
 
-uint8_t rk_mytermregime(int regime, int vtime, int vmin, int echo, int sigint);
+enum ERRORS rk_mytermregime(int regime, cc_t vtime, cc_t vmin, int echo, int sigint);
 
 #endif //ARCH_RK_H

@@ -3,14 +3,14 @@
 //
 
 
+#include <fcntl.h>
 #include "rk.h"
 
-uint8_t rk_readkey(KEYS *key) {
-    int n;
+enum ERRORS rk_readkey(KEYS *key) {
     char read_key[7];
-
+    *key = no_key;
     memset(read_key, 0, sizeof(read_key));
-    if ((n = (int) read(0, read_key, 6)) < 0) {
+    if (((int) read(STDIN_FILENO, read_key, 6)) < 0) {
         perror("read");
         return ERROR;
     } else {
@@ -48,20 +48,61 @@ uint8_t rk_readkey(KEYS *key) {
     return SUCCESS;
 }
 
-uint8_t rk_mytermsave() {
-    return 0;
+enum ERRORS rk_mytermsave() {
+    struct termios opt;
+    int file = creat("TermSet", 0644);
+    if (file == -1) {
+        fprintf(stderr, "Cannot create TermSet\n");
+        close(file);
+        return ERROR;
+    }
+    tcgetattr(STDIN_FILENO, &opt);
+    if (write(file, &opt, sizeof(opt)) < 1) {
+        fprintf(stderr, "Cannot write TermSet\n");
+        close(file);
+        return ERROR;
+    }
+    close(file);
+    return SUCCESS;
 }
 
-uint8_t rk_mytermregime(int regime, int vtime, int vmin, int echo, int sigint) {
+enum ERRORS rk_mytermstore()
+{
+    struct termios opt;
+    int file = open("TermSet", O_RDONLY);
+    if (file == -1) {
+        fprintf(stderr, "Cannot open TermSet\n");
+        close(file);
+        return ERROR;
+    }
+    if (read(file, &opt, sizeof(opt)) < 1) {
+        fprintf(stderr, "Cannot read TermSet\n");
+        close(file);
+        return ERROR;
+    }
+    if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &opt)) {
+        close(file);
+        fprintf(stderr, "Set\n");
+        return ERROR;
+    }
+    close(file);
+    return SUCCESS;
+}
+
+enum ERRORS rk_mytermregime(int regime, cc_t vtime, cc_t vmin, int echo, int sigint) {
     struct termios tcset;
-    if ((regime < 0) || (vtime < 0)||(vmin<0) || (echo < 0) || (sigint < 0))
+    if ((regime < 0) || (vtime < 0) || (vmin < 0) || (echo < 0) || (sigint < 0))
         return ERROR;//если не поступили параметры
 
-    tcgetattr(0, &tcset);
-    if (regime)
+    tcgetattr(STDIN_FILENO, &tcset);
+    if (regime) {
         tcset.c_lflag |= ICANON;
-    else
-        tcset.c_lflag &= ~ICANON;/* Режимы дисц. линии связи (Канонический построчный ввод) */
+    } else {
+        tcset.c_lflag &= ~ICANON;
+        tcset.c_cc[VMIN] = vmin;
+        tcset.c_cc[VTIME] = vtime;
+    }/* Режимы дисц. линии связи (Канонический построчный ввод) */
+
 
     if (echo)
         tcset.c_lflag |= ECHO;
@@ -73,6 +114,7 @@ uint8_t rk_mytermregime(int regime, int vtime, int vmin, int echo, int sigint) {
     else
         tcset.c_lflag &= ~ISIG;//обработка клавиш прирывания,ISIG Разрешить обработку прерываний
 
-    tcsetattr(0, TCSAFLUSH, &tcset);
+    tcsetattr(STDIN_FILENO, TCIFLUSH, &tcset);
+
     return SUCCESS;
 }
