@@ -128,6 +128,7 @@ int print_char(char x, uint8_t a, uint8_t b, enum COLORS_TERM fg, enum COLORS_TE
         default:
             mt_clscr();
             fprintf(stderr, "Incorrect char[%d]\n", x);
+            rk_mytermstore();
             return -1;
     }
     return 0;
@@ -138,17 +139,21 @@ void memory_print(uint8_t cur, enum COLORS_TERM fg, enum COLORS_TERM bg) {
 
     x = 2;
     y = 2;
-    char buf[5];
+    uint16_t data;
+    char buf[] = {0, 0, 0, 0, 0};
     for (i = 0; i < 100; i++) {
         mt_gotoXY(x, y);
         y++;
-        sprintf(buf, "+%04X", ram[i]);
+        sc_memoryGet(i, &data);
+        sprintf(buf, "+%04X", data);
 //        printf("+%0*X\n", 4, ram[i - 1]);
         if ((cur ) == i) {
             mt_setfgcolor(fg);
             mt_setbgcolor(bg);
+
             write(STDOUT_FILENO, buf, strlen(buf));
-            print_BC(ram[i], clr_cyan, clr_black);
+            print_BC(data, clr_cyan, clr_black);
+
             mt_setfgcolor(clr_default);
             mt_setbgcolor(clr_default);
         } else {
@@ -173,21 +178,112 @@ int init_data() {
         fprintf(stderr, "Bad read BigChars\n");
         return -1;
     }
+    xy.x = 0;
+    xy.y = 0;
     return 0;
 }
 
-int print_BC(uint32_t symb, enum COLORS_TERM fg, enum COLORS_TERM bg) {
+int print_BC(uint16_t symb, enum COLORS_TERM fg, enum COLORS_TERM bg) {
     uint8_t x = 2,
             y = 14;
-    char hex[5];
-//    memset(hex, 48, 5);
-    sprintf(hex, "%05d", symb);
+    char hex[6];
+    memset(hex, 0, 5);
+    if ((symb >> 14) & 1) {
+        if (symb >> 15) {
+            symb &= ~(1 << 15);
+            sprintf(hex, "%05d", -symb);
+        } else
+            sprintf(hex, "%05d", symb);
+    } else {
+        uint8_t oper, val;
+        sc_commandDecode(symb, &oper, &val);
+        sprintf(hex, "%x+%x", oper, val);
+    }
     for (int i = 0; i < 5; i++) {
         if (-1 == print_char(hex[i], x, y, fg, bg)) {
-            fprintf(stderr, "Bad print %s\n", hex);
+            fprintf(stderr, "Bad print %d | %s\n", i, hex);
             exit(1);
         }
         x += 9;
     }
+}
+
+void move(KEYS key) {
+    switch (key) {
+        case (key_up) : {
+            if (xy.x == 0 && xy.y == 0) break;
+            if (xy.x == 0) {
+                xy.x = 9;
+                xy.y--;
+            } else {
+                xy.x--;
+            }
+            break;
+        }
+        case (key_down) : {
+            if (xy.x == 9 && xy.y == 9) break;
+            if (xy.x == 9) {
+                xy.x = 0;
+                xy.y++;
+            } else {
+                xy.x++;
+            }
+            break;
+        }
+        case (key_left) : {
+            if (xy.y == 0) break;
+            xy.y--;
+            break;
+        }
+        case (key_right) : {
+            if (xy.y == 9) break;
+            xy.y++;
+            break;
+        }
+        default : {
+            break;
+        }
+    }
+    memory_print((uint8_t) (xy.x + (xy.y * 10)), clr_brown, clr_red);
+}
+
+uint8_t readInt(int size, uint8_t *oper, uint16_t *val) {
+    char buff[size];
+    for (int i = 0; i < size; i++) buff[i] = 0;
+    int t = 0;
+
+    for (int i = 0; buff[i - 1] != '\n'; i++) {
+        read(STDIN_FILENO, (buff + i), 1);
+        if (buff[i] == ':') t = i;
+    }
+    if (t) {
+        *oper = (uint8_t) atoi(buff);
+        *val = (uint16_t) atoi(buff + t + 1);
+        mt_gotoXY(40, 40);
+        printf("%d | %d", *oper, *val);
+        return 1;
+    } else {
+        if (buff[0] == '-') {
+            *val = (uint16_t) atoi(buff + 1);
+            *val |= 1 << 15;
+        }
+    }
+    return 0;
+}
+
+uint8_t inp()
+{
+    uint16_t val;
+    uint8_t oper;
+    if (readInt(8, &oper, &val)) {
+        sc_commandEncode(oper, (uint8_t) val, &val);
+    } else if (1 & (val >> 14)) {
+        return 1;
+    } else {
+        val |= 1 << 14;
+    }
+    sc_memorySet((uint8_t) (xy.x + xy.y * 10), val);
+    return 0;
+
 }
 

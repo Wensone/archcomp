@@ -1,17 +1,13 @@
 #include "SimpleComputer.h"
 
 uint8_t sc_memoryInit(){
-	int i = 0;
-	for(i = 0; i < SIZE; i++){
-		*(ram + i) = 0 + i;
-	}
+	for (int i = 0; i < 100; i++) *(ram + i) = 0;
 	return SUCCESS_SC;
 }
 
 uint8_t sc_memorySet(uint8_t address, uint16_t value){
 	if(address < 0 || address >= SIZE)
 		return INCORRECT_MEMORY;
-
 	*(ram + address) = value;
 
 	return SUCCESS_SC;
@@ -74,7 +70,7 @@ uint8_t sc_regGet(uint8_t reg, uint8_t *value) {
         (reg != FLAG_T) && (reg != FLAG_0)  ) {
         return COMMAND_ERROR;
     }
-    *value = (int) (Flags & reg);
+    *value = (uint8_t) (Flags & reg);
     //*value >>= (int)log2((double) reg);
     return SUCCESS_SC;
 }
@@ -83,7 +79,7 @@ uint8_t sc_commandEncode(uint8_t command, uint8_t operand, uint16_t *value) {
     if (command < 0 || command > 127 || operand < 0 || operand > 127) {
         return COMMAND_ERROR;
     }
-    int temp = 0x00;
+    uint16_t temp = 0x00;
     temp |= command;
     temp <<= 7;
     temp |= operand;
@@ -93,10 +89,10 @@ uint8_t sc_commandEncode(uint8_t command, uint8_t operand, uint16_t *value) {
 }
 
 uint8_t sc_commandDecode(uint16_t value, uint8_t *command, uint8_t *operand) {
-    if (value >> 15 != 0x0) {
+    if (value >> 14 != 0x0) {
         return COMMAND_ERROR;
     }
-    *command = (int) (value >> 7);
-    *operand = (int) (value & 0177);
+    *command = (uint8_t) (value >> 7);
+    *operand = (uint8_t) (value & 0177);
     return SUCCESS_SC;
 }

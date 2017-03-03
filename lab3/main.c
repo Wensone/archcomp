@@ -208,7 +208,7 @@ int main(){
     if (mt_getscreensize(&y, &x)) return 21;
     mt_gotoXY((uint16_t) (x / 2), (uint16_t) (y / 2));
 
-    if(ERROR == bc_box((uint16_t) (x / 2 - 1), (uint16_t) (y / 2 - 1), (uint16_t) (1 + 4), (uint16_t) (8))) {
+    if(ERROR_TERM == bc_box((uint16_t) (x / 2 - 1), (uint16_t) (y / 2 - 1), (uint16_t) (1 + 4), (uint16_t) (8))) {
         fprintf(stderr, ":c\n");
         return -1;
     }

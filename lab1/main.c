@@ -23,7 +23,8 @@ int main(){
 	sc_memorySet(6, 0);
 	printf("Mem set.Swap value Address: 0. Value: 6\n");
 	printf("Array after swap value: "); print(0, 8);
-
+	sc_memoryInit();
+	print(0, 99);
 	sc_memoryGet(0, &value);
 	printf("\nValue after using memGet: %d\n", value);
 
