@@ -19,7 +19,7 @@
 
 enum _ASCII {
     A0 = 0, A1 = 2, A2 = 4, A3 = 6, A4 = 8, A5 = 10, A6 = 12, A7 = 14, A8 = 16,
-    A9 = 18, AA = 20, AB = 22, AC = 24, AD = 26, AE= 28, AF = 30, APlus = 32
+    A9 = 18, AA = 20, AB = 22, AC = 24, AD = 26, AE= 28, AF = 30, APlus = 32, AM = 34, ADD = 36
 };
 
 enum ERROR_TERM bc_printA(const char*);

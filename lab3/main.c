@@ -190,6 +190,29 @@ char bigchar_F[64] = {
         1, 0, 0, 0, 0, 0, 0, 0
 };
 
+char bigchar_mins[64] = {
+	    0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0
+};
+
+char bigchar_ddot[64] = {
+	    0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, 1, 0, 0, 0,
+        0, 0, 0, 1, 1, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, 1, 0, 0, 0,
+        0, 0, 0, 1, 1, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0
+};
+
+
 int arr_to_big(uint32_t *big, char *arr){
     int i;
     int x, y;
@@ -232,10 +255,12 @@ int main(){
     arr_to_big(big + AE, bigchar_E);
     arr_to_big(big + AF, bigchar_F);
     arr_to_big(big + APlus, bigchar_plus);
+    arr_to_big(big + AM, bigchar_mins);
+    arr_to_big(big + ADD, bigchar_ddot);
 
 
     uint8_t _x = 0, _y = 1;
-    for (int i = 0; i < 34; i +=2) {
+    for (int i = 0; i < 38; i +=2) {
         if (ERROR_TERM == bc_printbigchar(big + i, _x, _y, clr_red, clr_brown)) return -3;
         _x += 10;
         if (_x == 80) {
@@ -250,7 +275,7 @@ int main(){
         perror("Created ");
         return -1;
     }
-    int count = 17;
+    int count = 19;
     if (ERROR_TERM == bc_bigcharwrite(file, big, count)) {
         fprintf(stderr, "write\n");
         return -1;
@@ -263,7 +288,7 @@ int main(){
         return -1;
     }
 
-    for (int i = 0; i < 34; i +=2) {
+    for (int i = 0; i < 38; i +=2) {
         if (ERROR_TERM == bc_printbigchar(ch + i, _x, _y, clr_red, clr_green)) return -3;
         _x += 10;
         if (_x == 80) {
