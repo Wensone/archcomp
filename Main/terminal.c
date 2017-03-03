@@ -125,6 +125,14 @@ int print_char(char x, uint8_t a, uint8_t b, enum COLORS_TERM fg, enum COLORS_TE
             bc_printbigchar(big + A0, a, b, fg, bg);
             break;
         }
+        case ':': {
+            bc_printbigchar(big + ADV, a, b, fg, bg);
+            break;
+        }
+        case '-': {
+            bc_printbigchar(big _AMin, a, b, fg, bg);
+            break;
+        }
         default:
             mt_clscr();
             fprintf(stderr, "Incorrect char[%d]\n", x);
