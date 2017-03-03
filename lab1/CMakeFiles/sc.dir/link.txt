@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsc.a  CMakeFiles/sc.dir/SimpleComputer.c.o
+/usr/bin/ranlib libsc.a

@@ -1,0 +1,1 @@
+/usr/bin/cc     CMakeFiles/Main.dir/main.c.o CMakeFiles/Main.dir/terminal.c.o  -o Main ../lab4/librk.a ../lab2/libterm.a ../lab3/libbc.a ../lab1/libsc.a 

@@ -1,15 +1,15 @@
 #include "terminal.h"
 
-int main()
-{
-    //rk_mytermsave();
-//    rk_mytermregime(0, 0, 1, 0, 1);
-//    box_print();
-//    memory_print(0, clr_green, clr_magenta);
-    init_data();
-//    sc_memorySet(77, 0x13);
-//    char FileMemory[16] = "MemData";
-    /*KEYS key = no_key;
+int main(){
+    rk_mytermsave();
+    rk_mytermregime(0, 0, 1, 0, 1); // режим, время ожидания, сколько считываем, вывод, заглушка сигналов
+    box_print(); // Рисуем все рамочки
+    memory_print(0, clr_green, clr_magenta); // таблица
+    init_data(); // считывание больших символов
+
+    char FileMemory[16] = "MemData";
+    KEYS key = no_key;
+
     while (key != key_esc) {
         rk_readkey(&key);
         switch (key) {
@@ -70,13 +70,8 @@ int main()
                 break;
             }
         }
-    }*/
+    }
 
-    int8_t a;
-    uint16_t b, c;
-    xy.y = xy.x = 0;
-    readInt(8, &a, &b);
-//    print_BC((22) | (1 << 14) | (1 << 15), clr_blue, clr_black);
-//    rk_mytermstore();
+    rk_mytermstore();
     return 0;
 }

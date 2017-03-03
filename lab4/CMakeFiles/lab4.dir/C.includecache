@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/paul/Desktop/archcomp/lab4/main.c
+rk.h
+/home/paul/Desktop/archcomp/lab4/rk.h
+
+/home/paul/Desktop/archcomp/lab4/rk.h
+stdint.h
+-
+string.h
+-
+unistd.h
+-
+stdio.h
+-
+stdlib.h
+-
+termios.h
+-
+

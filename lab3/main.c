@@ -13,7 +13,6 @@ char bigchar_plus[64] = {
         0, 0, 0, 1, 1, 0, 0, 0
 };
 
-
 char bigchar_0[64] = {
         0, 1, 1, 1, 1, 1, 1, 0,
         1, 0, 0, 0, 0, 0, 1, 1,
@@ -212,7 +211,6 @@ char bigchar_ddot[64] = {
         0, 0, 0, 0, 0, 0, 0, 0
 };
 
-
 int arr_to_big(uint32_t *big, char *arr){
     int i;
     int x, y;
@@ -235,8 +233,8 @@ int main(){
         fprintf(stderr, ":c\n");
         return -1;
     }
-    uint32_t big[34];
-    memset(big, 0, 34);
+    uint32_t big[38];
+    memset(big, 0, 38);
 
     arr_to_big(big + A0, bigchar_0);
     arr_to_big(big + A1, bigchar_1);
@@ -270,7 +268,7 @@ int main(){
     }
 
     int file = open("BIG_CHARS", O_CREAT | O_TRUNC | O_RDWR,
-                    S_IWRITE | S_IREAD);
+                    S_IWRITE | S_IREAD); // создать, если создан очистить, запись, добавление прав записи и чтения
     if (file == -1) {
         perror("Created ");
         return -1;

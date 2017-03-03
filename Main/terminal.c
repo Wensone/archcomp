@@ -25,7 +25,6 @@ int box_print() {
 
     bc_box(1, 13, 46, 10); // big chars
 
-
     bc_box(47, 13, 45, 10);
     mt_gotoXY(49, 13);
     write(STDOUT_FILENO, "Keys", 4);
@@ -154,7 +153,6 @@ void memory_print(uint8_t cur, enum COLORS_TERM fg, enum COLORS_TERM bg) {
         y++;
         sc_memoryGet(i, &data);
         sprintf(buf, "+%04X", data);
-//        printf("+%0*X\n", 4, ram[i - 1]);
         if ((cur ) == i) {
             mt_setfgcolor(fg);
             mt_setbgcolor(bg);
@@ -182,7 +180,7 @@ int init_data() {
         return -2;
     }
     int count;
-    if (bc_bigcharread(fd, big, 17, &count) == ERROR) {
+    if (bc_bigcharread(fd, big, 19, &count) == ERROR) {
         fprintf(stderr, "Bad read BigChars\n");
         return -1;
     }
@@ -197,23 +195,23 @@ int print_BC(uint16_t symb, enum COLORS_TERM fg, enum COLORS_TERM bg) {
     char hex[6];
     int i = 0;
     memset(hex, 0, 5);
-    if ((symb >> 14) & 1) {
-        symb &= ~(1 << 14);
-        if (symb >> 15) {
-            symb &= ~(1 << 15);
-            print_BC('-', fg, bg);
+    if ((symb >> 14) & 1) {// если дата
+        symb &= ~(1 << 14); // убираем единицу
+        if (symb >> 15) { // если есть минус
+            symb &= ~(1 << 15); // убираем минус
+            // print_BC('-', fg, bg); // рисуем его
             ++i;
             hex[0] = '-';
-            sprintf(hex + 1, "%04d", symb);
+            sprintf(hex + 1, "%04d", symb); // минимум 4 символа + заполнить нулями если нет символов
         } else {
-            sprintf(hex, "%05d", symb);
+            sprintf(hex, "%05d", symb); // вывод с +0000
         }
-    } else {
+    } else { // если команда
         uint8_t oper, val;
-        sc_commandDecode(symb, &oper, &val);
-        sprintf(hex, "%X+%X", oper, val);
+        sc_commandDecode(symb, &oper, &val); // декодируем инфу
+        sprintf(hex, "%X:%X", oper, val); // приводим к типу и записываем в ячейку в таком виде
     }
-    for ( ; i < 5; i++) {
+    for ( ; i < 5; i++) { // отрисовка строки бигчарами
         if (-1 == print_char(hex[i], x, y, fg, bg)) {
             fprintf(stderr, "Bad print %d | %s\n", i, hex);
             exit(1);
@@ -274,32 +272,31 @@ uint8_t readInt(int size, uint8_t *oper, uint16_t *val) {
     if (t) {
         *oper = (uint8_t) atoi(buff);
         *val = (uint16_t) atoi(buff + t + 1);
-        mt_gotoXY(40, 40);
-        printf("%d | %d", *oper, *val);
-        return 1;
+        // mt_gotoXY(40, 40);
+        // printf("%d | %d", *oper, *val);
+        return 1; // считали команду
     } else {
         if (buff[0] == '-') {
             *val = (uint16_t) atoi(buff + 1);
             *val |= 1 << 15;
+        } else {
+            *val = (uint16_t) atoi(buff);
         }
     }
-    printf("%s\n", buff);
     return 0;
 }
 
-uint8_t inp()
-{
+uint8_t inp(){
     uint16_t val;
     uint8_t oper;
-    if (readInt(8, &oper, &val)) {
+    if (readInt(8, &oper, &val)) { // если команда - закодировали
         sc_commandEncode(oper, (uint8_t) val, &val);
-    } else if (1 & (val >> 14)) {
+    } else if (1 & (val >> 14)) { // вышли ли за границы
         return 1;
-    } else {
+    } else { // ставим, что это у нас дата
         val |= 1 << 14;
     }
-    sc_memorySet((uint8_t) (xy.x + xy.y * 10), val);
+    sc_memorySet((uint8_t) (xy.x + xy.y * 10), val); // записали в текущую ячейку
     return 0;
 
 }
-

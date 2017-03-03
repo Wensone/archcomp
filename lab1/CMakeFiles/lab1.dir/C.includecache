@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/paul/Desktop/archcomp/lab1/SimpleComputer.h
+stdint.h
+-
+stdio.h
+-
+memory.h
+-
+math.h
+-
+
+/home/paul/Desktop/archcomp/lab1/main.c
+SimpleComputer.h
+/home/paul/Desktop/archcomp/lab1/SimpleComputer.h
+

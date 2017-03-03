@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/paul/Desktop/archcomp/lab2/term.c
+memory.h
+-
+term.h
+/home/paul/Desktop/archcomp/lab2/term.h
+
+/home/paul/Desktop/archcomp/lab2/term.h
+stdint.h
+-
+stdio.h
+-
+termios.h
+-
+sys/ioctl.h
+-
+unistd.h
+-
+

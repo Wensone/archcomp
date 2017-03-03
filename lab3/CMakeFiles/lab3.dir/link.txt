@@ -1,0 +1,1 @@
+/usr/bin/cc     CMakeFiles/lab3.dir/main.c.o  -o lab3 libbc.a ../lab2/libterm.a 

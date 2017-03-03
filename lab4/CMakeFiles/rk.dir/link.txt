@@ -1,0 +1,2 @@
+/usr/bin/ar qc librk.a  CMakeFiles/rk.dir/rk.c.o
+/usr/bin/ranlib librk.a
