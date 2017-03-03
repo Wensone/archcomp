@@ -5,7 +5,7 @@ uint8_t sc_memoryInit(){
 	for(i = 0; i < SIZE; i++){
 		*(ram + i) = 0 + i;
 	}
-	return SUCCESS;
+	return SUCCESS_SC;
 }
 
 uint8_t sc_memorySet(uint8_t address, uint16_t value){
@@ -14,7 +14,7 @@ uint8_t sc_memorySet(uint8_t address, uint16_t value){
 
 	*(ram + address) = value;
 
-	return SUCCESS;
+	return SUCCESS_SC;
 }
 
 uint8_t sc_memoryGet(uint8_t address, uint16_t *value){
@@ -23,7 +23,7 @@ uint8_t sc_memoryGet(uint8_t address, uint16_t *value){
 
 	*value = *(ram + address);
 
-	return SUCCESS;
+	return SUCCESS_SC;
 }
 
 uint8_t sc_memorySave(char *filename){
@@ -33,7 +33,7 @@ uint8_t sc_memorySave(char *filename){
 	fwrite(ram, sizeof(int), SIZE, file);
 
 	fclose(file);
-	return SUCCESS;
+	return SUCCESS_SC;
 }
 
 uint8_t sc_memoryLoad(char *filename){
@@ -43,12 +43,12 @@ uint8_t sc_memoryLoad(char *filename){
 	fread(ram, sizeof(int), SIZE, file);
 
 	fclose(file);
-	return SUCCESS;
+	return SUCCESS_SC;
 }
 
 uint8_t sc_regInit(){
 	Flags = 0;
-	return SUCCESS;
+	return SUCCESS_SC;
 }
 
 uint8_t sc_regSet(uint8_t reg, uint8_t value) {
@@ -65,7 +65,7 @@ uint8_t sc_regSet(uint8_t reg, uint8_t value) {
     } else {
         Flags &= reg;
     }
-    return SUCCESS;
+    return SUCCESS_SC;
 
 }
 
@@ -76,7 +76,7 @@ uint8_t sc_regGet(uint8_t reg, uint8_t *value) {
     }
     *value = (int) (Flags & reg);
     //*value >>= (int)log2((double) reg);
-    return SUCCESS;
+    return SUCCESS_SC;
 }
 
 uint8_t sc_commandEncode(uint8_t command, uint8_t operand, uint16_t *value) {
@@ -89,7 +89,7 @@ uint8_t sc_commandEncode(uint8_t command, uint8_t operand, uint16_t *value) {
     temp |= operand;
     *value = temp;
 
-    return SUCCESS;
+    return SUCCESS_SC;
 }
 
 uint8_t sc_commandDecode(uint16_t value, uint8_t *command, uint8_t *operand) {
@@ -98,5 +98,5 @@ uint8_t sc_commandDecode(uint16_t value, uint8_t *command, uint8_t *operand) {
     }
     *command = (int) (value >> 7);
     *operand = (int) (value & 0177);
-    return SUCCESS;
+    return SUCCESS_SC;
 }

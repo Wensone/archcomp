@@ -28,7 +28,7 @@ enum ERRORS rk_readkey(KEYS *key) {
             *key = key_i;
         if (read_key[0] == '\n')
             *key = key_enter;
-        if (read_key[0] == '\033')
+        if (read_key[0] == '\033' && read_key[1] == 0)
             *key = key_esc;
         if ((read_key[0] == '\033') && (read_key[1] == '[') && (read_key[2] == '1') && (read_key[3] == '5') &&
             (read_key[4] == '~'))

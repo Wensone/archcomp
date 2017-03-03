@@ -16,12 +16,14 @@
 
 uint16_t ram[SIZE];
 uint16_t Flags;
+uint16_t counter;
+uint32_t accumulator;
 
 enum ERROR_SC{
 	COMMAND_ERROR = -3,
 	FILE_ERROR = -2,
 	INCORRECT_MEMORY = -1,
-	SUCCESS = 0
+	SUCCESS_SC = 0
 };
 
 uint8_t sc_memoryInit();

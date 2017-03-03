@@ -3,6 +3,8 @@
 
 #include "../lab2/term.h"
 #include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 #define ACS_CKBOARD "a"
 #define CHAR_DR "j"

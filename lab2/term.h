@@ -8,8 +8,8 @@
 #include <unistd.h>
 
 enum ERROR_TERM {
-	ERROR = -1,
-	SUCCESS = 0
+	ERROR_TERM = -1,
+	SUCCESS_TERM = 0
 };
 
 enum COLORS_TERM {
