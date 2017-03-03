@@ -21,5 +21,6 @@ int print_BC(uint16_t symb, enum COLORS_TERM fg, enum COLORS_TERM bg);
 uint8_t readInt(int size, uint8_t *oper, uint16_t *val);
 void move(KEYS);
 uint8_t inp();
+uint16_t getMem(uint16_t);
 
 #endif //ARCH_TERMINAL_H

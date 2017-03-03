@@ -182,10 +182,11 @@ int init_data() {
         return -2;
     }
     int count;
-    if (bc_bigcharread(fd, big, 17, &count) == ERROR) {
+    if (bc_bigcharread(fd, big, 19, &count) == ERROR) {
         fprintf(stderr, "Bad read BigChars\n");
         return -1;
     }
+    if (count != 19) exit(22);
     xy.x = 0;
     xy.y = 0;
     return 0;
@@ -195,25 +196,22 @@ int print_BC(uint16_t symb, enum COLORS_TERM fg, enum COLORS_TERM bg) {
     uint8_t x = 2,
             y = 14;
     char hex[6];
-    int i = 0;
     memset(hex, 0, 5);
     if ((symb >> 14) & 1) {
         symb &= ~(1 << 14);
         if (symb >> 15) {
             symb &= ~(1 << 15);
-            print_BC('-', fg, bg);
-            ++i;
+            sprintf(hex, "%05d", symb);
             hex[0] = '-';
-            sprintf(hex + 1, "%04d", symb);
         } else {
             sprintf(hex, "%05d", symb);
         }
     } else {
         uint8_t oper, val;
         sc_commandDecode(symb, &oper, &val);
-        sprintf(hex, "%X+%X", oper, val);
+        sprintf(hex, "%02X:%02X", oper, val);
     }
-    for ( ; i < 5; i++) {
+    for (int i = 0 ; i < 5; i++) {
         if (-1 == print_char(hex[i], x, y, fg, bg)) {
             fprintf(stderr, "Bad print %d | %s\n", i, hex);
             exit(1);
@@ -275,15 +273,17 @@ uint8_t readInt(int size, uint8_t *oper, uint16_t *val) {
         *oper = (uint8_t) atoi(buff);
         *val = (uint16_t) atoi(buff + t + 1);
         mt_gotoXY(40, 40);
-        printf("%d | %d", *oper, *val);
+//        printf("%d | %d", *oper, *val);
         return 1;
     } else {
         if (buff[0] == '-') {
             *val = (uint16_t) atoi(buff + 1);
             *val |= 1 << 15;
+        } else {
+            *val = (uint16_t) atoi(buff);
         }
     }
-    printf("%s\n", buff);
+//   printf("%s\n", buff);
     return 0;
 }
 
@@ -301,5 +301,10 @@ uint8_t inp()
     sc_memorySet((uint8_t) (xy.x + xy.y * 10), val);
     return 0;
 
+}
+
+uint16_t getMem(uint16_t x) {
+
+    return 0;
 }
 
