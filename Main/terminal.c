@@ -126,11 +126,11 @@ int print_char(char x, uint8_t a, uint8_t b, enum COLORS_TERM fg, enum COLORS_TE
             break;
         }
         case ':': {
-            bc_printbigchar(big + ADV, a, b, fg, bg);
+            bc_printbigchar(big + ADD, a, b, fg, bg);
             break;
         }
         case '-': {
-            bc_printbigchar(big _AMin, a, b, fg, bg);
+            bc_printbigchar(big + AM, a, b, fg, bg);
             break;
         }
         default:
@@ -195,19 +195,25 @@ int print_BC(uint16_t symb, enum COLORS_TERM fg, enum COLORS_TERM bg) {
     uint8_t x = 2,
             y = 14;
     char hex[6];
+    int i = 0;
     memset(hex, 0, 5);
     if ((symb >> 14) & 1) {
+        symb &= ~(1 << 14);
         if (symb >> 15) {
             symb &= ~(1 << 15);
-            sprintf(hex, "%05d", -symb);
-        } else
+            print_BC('-', fg, bg);
+            ++i;
+            hex[0] = '-';
+            sprintf(hex + 1, "%04d", symb);
+        } else {
             sprintf(hex, "%05d", symb);
+        }
     } else {
         uint8_t oper, val;
         sc_commandDecode(symb, &oper, &val);
-        sprintf(hex, "%x+%x", oper, val);
+        sprintf(hex, "%X+%X", oper, val);
     }
-    for (int i = 0; i < 5; i++) {
+    for ( ; i < 5; i++) {
         if (-1 == print_char(hex[i], x, y, fg, bg)) {
             fprintf(stderr, "Bad print %d | %s\n", i, hex);
             exit(1);
@@ -264,6 +270,7 @@ uint8_t readInt(int size, uint8_t *oper, uint16_t *val) {
         read(STDIN_FILENO, (buff + i), 1);
         if (buff[i] == ':') t = i;
     }
+
     if (t) {
         *oper = (uint8_t) atoi(buff);
         *val = (uint16_t) atoi(buff + t + 1);
@@ -276,6 +283,7 @@ uint8_t readInt(int size, uint8_t *oper, uint16_t *val) {
             *val |= 1 << 15;
         }
     }
+    printf("%s\n", buff);
     return 0;
 }
 

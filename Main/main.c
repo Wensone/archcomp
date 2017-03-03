@@ -2,15 +2,14 @@
 
 int main()
 {
-    rk_mytermsave();
-    rk_mytermregime(0, 0, 1, 0, 1);
-    box_print();
-    memory_print(0, clr_green, clr_magenta);
+    //rk_mytermsave();
+//    rk_mytermregime(0, 0, 1, 0, 1);
+//    box_print();
+//    memory_print(0, clr_green, clr_magenta);
     init_data();
-    sc_memorySet(77, 0x13);
-    char FileMemory[16] = "MemData";
-
-    KEYS key = no_key;
+//    sc_memorySet(77, 0x13);
+//    char FileMemory[16] = "MemData";
+    /*KEYS key = no_key;
     while (key != key_esc) {
         rk_readkey(&key);
         switch (key) {
@@ -71,7 +70,13 @@ int main()
                 break;
             }
         }
-    }
-    rk_mytermstore();
+    }*/
+
+    int8_t a;
+    uint16_t b, c;
+    xy.y = xy.x = 0;
+    readInt(8, &a, &b);
+//    print_BC((22) | (1 << 14) | (1 << 15), clr_blue, clr_black);
+//    rk_mytermstore();
     return 0;
 }
