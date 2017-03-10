@@ -59,10 +59,10 @@ uint8_t sc_regSet(uint8_t reg, uint8_t value) {
     if (value == 0) {
         Flags &= !reg;
     } else {
-        Flags &= reg;
+        Flags |= reg;
     }
+    
     return SUCCESS_SC;
-
 }
 
 uint8_t sc_regGet(uint8_t reg, uint8_t *value) {
