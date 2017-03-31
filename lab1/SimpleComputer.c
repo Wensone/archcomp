@@ -134,7 +134,10 @@ int sc_getData(int dest, int *Data)
     return EXIT_SUCCESS;
 }
 
-int isData(int c)
-{
+int isData(int c){
+    if (abs(c) >> 15 || abs(c) >> 14) {
+        return EXIT_FAILURE;
+    }
+
     return (c >> 14);
 }
