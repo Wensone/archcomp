@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(SOURCE_FILES
     main.c)
 
-set(lib term.c term.h)
+set(lib term.c head/term.h)
 
 add_library(term ${lib})
 

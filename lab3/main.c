@@ -1,8 +1,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
-#include "graph.h"
+#include "head/graph.h"
 
-char bigchar_plus[64] = {
+int bigint_plus[64] = {
         0, 0, 0, 1, 1, 0, 0, 0,
         0, 0, 0, 1, 1, 0, 0, 0,
         0, 0, 0, 1, 1, 0, 0, 0,
@@ -14,7 +14,7 @@ char bigchar_plus[64] = {
 };
 
 
-char bigchar_0[64] = {
+int bigint_0[64] = {
         0, 1, 1, 1, 1, 1, 1, 0,
         1, 0, 0, 0, 0, 0, 1, 1,
         1, 0, 0, 0, 0, 1, 0, 1,
@@ -25,7 +25,7 @@ char bigchar_0[64] = {
         0, 1, 1, 1, 1, 1, 1, 0
 };
 
-char bigchar_1[64] = {
+int bigint_1[64] = {
         0, 0, 0, 1, 1, 0, 0, 0,
         0, 0, 1, 1, 1, 0, 0, 0,
         0, 1, 0, 1, 1, 0, 0, 0,
@@ -36,7 +36,7 @@ char bigchar_1[64] = {
         1, 1, 1, 1, 1, 1, 1, 1
 };
 
-char bigchar_2[64] = {
+int bigint_2[64] = {
         0, 1, 1, 1, 1, 1, 1, 0,
         1, 0, 0, 0, 0, 0, 0, 1,
         0, 0, 0, 0, 0, 0, 0, 1,
@@ -47,7 +47,7 @@ char bigchar_2[64] = {
         1, 1, 1, 1, 1, 1, 1, 1
 };
 
-char bigchar_3[64] = {
+int bigint_3[64] = {
         0, 1, 1, 1, 1, 1, 1, 0,
         1, 0, 0, 0, 0, 0, 0, 1,
         0, 0, 0, 0, 0, 0, 0, 1,
@@ -58,7 +58,7 @@ char bigchar_3[64] = {
         0, 1, 1, 1, 1, 1, 1, 0
 };
 
-char bigchar_4[64] = {
+int bigint_4[64] = {
         0, 0, 0, 0, 0, 1, 0, 0,
         0, 0, 0, 0, 1, 1, 0, 0,
         0, 0, 0, 1, 0, 1, 0, 0,
@@ -69,7 +69,7 @@ char bigchar_4[64] = {
         0, 0, 0, 0, 0, 1, 0, 0
 };
 
-char bigchar_5[64] = {
+int bigint_5[64] = {
         1, 1, 1, 1, 1, 1, 1, 1,
         1, 0, 0, 0, 0, 0, 0, 0,
         1, 0, 0, 0, 0, 0, 0, 0,
@@ -80,7 +80,7 @@ char bigchar_5[64] = {
         0, 1, 1, 1, 1, 1, 1, 0
 };
 
-char bigchar_6[64] = {
+int bigint_6[64] = {
         0, 1, 1, 1, 1, 1, 1, 0,
         1, 0, 0, 0, 0, 0, 0, 0,
         1, 0, 0, 0, 0, 0, 0, 0,
@@ -91,7 +91,7 @@ char bigchar_6[64] = {
         0, 1, 1, 1, 1, 1, 1, 0
 };
 
-char bigchar_7[64] = {
+int bigint_7[64] = {
         1, 1, 1, 1, 1, 1, 1, 1,
         0, 0, 0, 0, 0, 0, 0, 1,
         0, 0, 0, 0, 0, 0, 0, 1,
@@ -102,7 +102,7 @@ char bigchar_7[64] = {
         0, 0, 0, 1, 1, 0, 0, 0
 };
 
-char bigchar_8[64] = {
+int bigint_8[64] = {
         0, 1, 1, 1, 1, 1, 1, 0,
         1, 0, 0, 0, 0, 0, 0, 1,
         1, 0, 0, 0, 0, 0, 0, 1,
@@ -113,7 +113,7 @@ char bigchar_8[64] = {
         0, 1, 1, 1, 1, 1, 1, 0
 };
 
-char bigchar_9[64] = {
+int bigint_9[64] = {
         0, 1, 1, 1, 1, 1, 1, 0,
         1, 0, 0, 0, 0, 0, 0, 1,
         1, 0, 0, 0, 0, 0, 0, 1,
@@ -124,7 +124,7 @@ char bigchar_9[64] = {
         0, 1, 1, 1, 1, 1, 1, 0
 };
 
-char bigchar_A[64] = {
+int bigint_A[64] = {
         0, 1, 1, 1, 1, 1, 1, 0,
         1, 0, 0, 0, 0, 0, 0, 1,
         1, 0, 0, 0, 0, 0, 0, 1,
@@ -135,7 +135,7 @@ char bigchar_A[64] = {
         1, 0, 0, 0, 0, 0, 0, 1
 };
 
-char bigchar_B[64] = {
+int bigint_B[64] = {
         1, 1, 1, 1, 1, 1, 1, 0,
         1, 0, 0, 0, 0, 0, 0, 1,
         1, 0, 0, 0, 0, 0, 0, 1,
@@ -146,7 +146,7 @@ char bigchar_B[64] = {
         1, 1, 1, 1, 1, 1, 1, 0
 };
 
-char bigchar_C[64] = {
+int bigint_C[64] = {
         0, 1, 1, 1, 1, 1, 1, 0,
         1, 0, 0, 0, 0, 0, 0, 1,
         1, 0, 0, 0, 0, 0, 0, 0,
@@ -157,7 +157,7 @@ char bigchar_C[64] = {
         0, 1, 1, 1, 1, 1, 1, 0
 };
 
-char bigchar_D[64] = {
+int bigint_D[64] = {
         1, 1, 1, 1, 1, 0, 0, 0,
         1, 0, 0, 0, 0, 1, 0, 0,
         1, 0, 0, 0, 0, 0, 1, 0,
@@ -168,7 +168,7 @@ char bigchar_D[64] = {
         1, 1, 1, 1, 1, 0, 0, 0
 };
 
-char bigchar_E[64] = {
+int bigint_E[64] = {
         1, 1, 1, 1, 1, 1, 1, 1,
         1, 0, 0, 0, 0, 0, 0, 0,
         1, 0, 0, 0, 0, 0, 0, 0,
@@ -179,7 +179,7 @@ char bigchar_E[64] = {
         1, 1, 1, 1, 1, 1, 1, 1
 };
 
-char bigchar_F[64] = {
+int bigint_F[64] = {
         1, 1, 1, 1, 1, 1, 1, 1,
         1, 0, 0, 0, 0, 0, 0, 0,
         1, 0, 0, 0, 0, 0, 0, 0,
@@ -190,8 +190,8 @@ char bigchar_F[64] = {
         1, 0, 0, 0, 0, 0, 0, 0
 };
 
-char bigchar_mins[64] = {
-	    0, 0, 0, 0, 0, 0, 0, 0,
+int bigint_mins[64] = {
+        0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0,
         1, 1, 1, 1, 1, 1, 1, 1,
@@ -201,8 +201,8 @@ char bigchar_mins[64] = {
         0, 0, 0, 0, 0, 0, 0, 0
 };
 
-char bigchar_ddot[64] = {
-	    0, 0, 0, 0, 0, 0, 0, 0,
+int bigint_ddot[64] = {
+        0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 1, 1, 0, 0, 0,
         0, 0, 0, 1, 1, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0,
@@ -213,55 +213,49 @@ char bigchar_ddot[64] = {
 };
 
 
-int arr_to_big(uint32_t *big, char *arr){
+int arr_to_big(int *big, int *arr)
+{
     int i;
     int x, y;
 
     for (i = 0; i < 64; i++) {
         x = i % 8;
         y = i / 8;
-        bc_setbigcharpos(big, (uint8_t) x, (uint8_t) y, (uint8_t) arr[i]);
+        if (bc_setbigcharpos(big, x, y, arr[i])) return EXIT_FAILURE;
     }
-    return 0;
+    return EXIT_SUCCESS;
 }
 
-int main(){
+int main()
+{
     mt_clscr();
-    uint16_t x = -1, y = -1;
-    if (mt_getscreensize(&y, &x)) return 21;
-    mt_gotoXY((uint16_t) (x / 2), (uint16_t) (y / 2));
+    int big[38];
+    memset(big, 0, 38 * sizeof(int));
 
-    if(ERROR_TERM == bc_box((uint16_t) (x / 2 - 1), (uint16_t) (y / 2 - 1), (uint16_t) (1 + 4), (uint16_t) (8))) {
-        fprintf(stderr, ":c\n");
-        return -1;
-    }
-    uint32_t big[34];
-    memset(big, 0, 34);
-
-    arr_to_big(big + A0, bigchar_0);
-    arr_to_big(big + A1, bigchar_1);
-    arr_to_big(big + A2, bigchar_2);
-    arr_to_big(big + A3, bigchar_3);
-    arr_to_big(big + A4, bigchar_4);
-    arr_to_big(big + A5, bigchar_5);
-    arr_to_big(big + A6, bigchar_6);
-    arr_to_big(big + A7, bigchar_7);
-    arr_to_big(big + A8, bigchar_8);
-    arr_to_big(big + A9, bigchar_9);
-    arr_to_big(big + AA, bigchar_A);
-    arr_to_big(big + AB, bigchar_B);
-    arr_to_big(big + AC, bigchar_C);
-    arr_to_big(big + AD, bigchar_D);
-    arr_to_big(big + AE, bigchar_E);
-    arr_to_big(big + AF, bigchar_F);
-    arr_to_big(big + APlus, bigchar_plus);
-    arr_to_big(big + AM, bigchar_mins);
-    arr_to_big(big + ADD, bigchar_ddot);
+    arr_to_big(big + A0, bigint_0);
+    arr_to_big(big + A1, bigint_1);
+    arr_to_big(big + A2, bigint_2);
+    arr_to_big(big + A3, bigint_3);
+    arr_to_big(big + A4, bigint_4);
+    arr_to_big(big + A5, bigint_5);
+    arr_to_big(big + A6, bigint_6);
+    arr_to_big(big + A7, bigint_7);
+    arr_to_big(big + A8, bigint_8);
+    arr_to_big(big + A9, bigint_9);
+    arr_to_big(big + AA, bigint_A);
+    arr_to_big(big + AB, bigint_B);
+    arr_to_big(big + AC, bigint_C);
+    arr_to_big(big + AD, bigint_D);
+    arr_to_big(big + AE, bigint_E);
+    arr_to_big(big + AF, bigint_F);
+    arr_to_big(big + APlus, bigint_plus);
+    arr_to_big(big + AM, bigint_mins);
+    arr_to_big(big + ADD, bigint_ddot);
 
 
-    uint8_t _x = 0, _y = 1;
-    for (int i = 0; i < 38; i +=2) {
-        if (ERROR_TERM == bc_printbigchar(big + i, _x, _y, clr_red, clr_brown)) return -3;
+    int _x = 0, _y = 1;
+    for (int i = 0; i < 38; i += 2) {
+        if (bc_printbigchar(big + i, _x, _y, clr_red, clr_brown)) return -3;
         _x += 10;
         if (_x == 80) {
             _y += 9;
@@ -269,27 +263,27 @@ int main(){
         }
     }
 
-    int file = open("BIG_CHARS", O_CREAT | O_TRUNC | O_RDWR,
+    int file = open("BIG_intS", O_CREAT | O_TRUNC | O_RDWR,
                     S_IWRITE | S_IREAD);
     if (file == -1) {
         perror("Created ");
         return -1;
     }
     int count = 19;
-    if (ERROR_TERM == bc_bigcharwrite(file, big, count)) {
+    if (bc_bigcharwrite(file, big, count)) {
         fprintf(stderr, "write\n");
         return -1;
     }
-    uint32_t ch[count * 2];
+    int ch[count * 2];
 
     lseek(file, 0, SEEK_SET);
-    if (ERROR_TERM == bc_bigcharread(file, ch, count, &count)) {
+    if (bc_bigcharread(file, ch, count, &count)) {
         fprintf(stderr, "read\n");
         return -1;
     }
 
-    for (int i = 0; i < 38; i +=2) {
-        if (ERROR_TERM == bc_printbigchar(ch + i, _x, _y, clr_red, clr_green)) return -3;
+    for (int i = 0; i < 38; i += 2) {
+        if (bc_printbigchar(ch + i, _x, _y, clr_red, clr_green)) return -3;
         _x += 10;
         if (_x == 80) {
             _y += 9;

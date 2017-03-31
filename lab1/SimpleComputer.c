@@ -1,59 +1,66 @@
-#include "SimpleComputer.h"
+#include "head/SimpleComputer.h"
 
-uint8_t sc_memoryInit(){
-	for (int i = 0; i < 100; i++) *(ram + i) = 0;
-	return SUCCESS_SC;
+int sc_memoryInit()
+{
+    memset(ram, 0, SIZE * sizeof(int));
+    return EXIT_SUCCESS;
 }
 
-uint8_t sc_memorySet(uint8_t address, uint16_t value){
-	if(address < 0 || address >= SIZE)
-		return INCORRECT_MEMORY;
-	*(ram + address) = value;
+int sc_memorySet(int address, int value)
+{
+    if (address < 0 || address >= SIZE)
+        return EXIT_FAILURE;
 
-	return SUCCESS_SC;
+    *(ram + address) = value;
+    return EXIT_SUCCESS;
 }
 
-uint8_t sc_memoryGet(uint8_t address, uint16_t *value){
-	if(address < 0 || address >= SIZE)
-		return INCORRECT_MEMORY;
+int sc_memoryGet(int address, int *value)
+{
+    if (address < 0 || address >= SIZE)
+        return EXIT_FAILURE;
 
-	*value = *(ram + address);
+    *value = *(ram + address);
 
-	return SUCCESS_SC;
+    return EXIT_SUCCESS;
 }
 
-uint8_t sc_memorySave(char *filename){
-	FILE *file = fopen(filename, "wb");
-	if(!file) FILE_ERROR;
+int sc_memorySave(char *filename)
+{
+    FILE *file = fopen(filename, "wb");
+    if (!file) EXIT_FAILURE;
 
-	fwrite(ram, sizeof(int), SIZE, file);
+    fwrite(ram, sizeof(int), SIZE, file);
 
-	fclose(file);
-	return SUCCESS_SC;
+    fclose(file);
+    return EXIT_SUCCESS;
 }
 
-uint8_t sc_memoryLoad(char *filename){
-	FILE *file = fopen(filename, "rb");
-	if(!file) return FILE_ERROR;
+int sc_memoryLoad(char *filename)
+{
+    FILE *file = fopen(filename, "rb");
+    if (!file) return EXIT_FAILURE;
 
-	fread(ram, sizeof(int), SIZE, file);
+    fread(ram, sizeof(int), SIZE, file);
 
-	fclose(file);
-	return SUCCESS_SC;
+    fclose(file);
+    return EXIT_SUCCESS;
 }
 
-uint8_t sc_regInit(){
-	Flags = 0;
-	return SUCCESS_SC;
+int sc_regInit()
+{
+    Flags = 0x0;
+    return EXIT_SUCCESS;
 }
 
-uint8_t sc_regSet(uint8_t reg, uint8_t value) {
+int sc_regSet(int reg, int value)
+{
     if ((reg != FLAG_E) && (reg != FLAG_M) && (reg != FLAG_P) &&
-            (reg != FLAG_T) && (reg != FLAG_0)) {
-        return INCORRECT_MEMORY;
+        (reg != FLAG_T) && (reg != FLAG_0)) {
+        return EXIT_FAILURE;
     }
-    if ((value < 0) || (value >  1) ) {
-        return  COMMAND_ERROR;
+    if ((value < 0) || (value > 1)) {
+        return EXIT_FAILURE;
     }
 
     if (value == 0) {
@@ -61,38 +68,73 @@ uint8_t sc_regSet(uint8_t reg, uint8_t value) {
     } else {
         Flags &= reg;
     }
-    return SUCCESS_SC;
+    return EXIT_SUCCESS;
 
 }
 
-uint8_t sc_regGet(uint8_t reg, uint8_t *value) {
+int sc_regGet(int reg, int *value)
+{
     if ((reg != FLAG_E) && (reg != FLAG_M) && (reg != FLAG_P) &&
-        (reg != FLAG_T) && (reg != FLAG_0)  ) {
-        return COMMAND_ERROR;
+        (reg != FLAG_T) && (reg != FLAG_0)) {
+        return EXIT_FAILURE;
     }
-    *value = (uint8_t) (Flags & reg);
+    *value = (Flags & reg);
     //*value >>= (int)log2((double) reg);
-    return SUCCESS_SC;
+    return EXIT_SUCCESS;
 }
 
-uint8_t sc_commandEncode(uint8_t command, uint8_t operand, uint16_t *value) {
+int sc_commandEncode(int command, int operand, int *value)
+{
     if (command < 0 || command > 127 || operand < 0 || operand > 127) {
-        return COMMAND_ERROR;
+        return EXIT_FAILURE;
     }
-    uint16_t temp = 0x00;
+    int temp = 0x00;
     temp |= command;
     temp <<= 7;
     temp |= operand;
     *value = temp;
 
-    return SUCCESS_SC;
+    return EXIT_SUCCESS;
 }
 
-uint8_t sc_commandDecode(uint16_t value, uint8_t *command, uint8_t *operand) {
+int sc_commandDecode(int value, int *command, int *operand)
+{
     if (value >> 14 != 0x0) {
-        return COMMAND_ERROR;
+        return EXIT_FAILURE;
     }
-    *command = (uint8_t) (value >> 7);
-    *operand = (uint8_t) (value & 0177);
-    return SUCCESS_SC;
+    *command = (value >> 7);
+    *operand = (value & 0177);
+    return EXIT_SUCCESS;
+}
+
+int sc_setData(int Data, int *dest)
+{
+    if (abs(Data) >> 15 || abs(Data) >> 14) {
+        return EXIT_FAILURE;
+    }
+    *dest = abs(Data);
+    if (Data < 0) {
+        *dest |= (1 << 15);
+    }
+    *dest |= (1 << 14);
+    return EXIT_SUCCESS;
+}
+
+int sc_getData(int dest, int *Data)
+{
+    if (!((dest) >> 14)) {
+        return EXIT_FAILURE;
+    }
+    *Data = dest;
+    *Data &= ~(1 << 14);
+    if ((dest) >> 15) {
+        *Data &= ~(1 << 15);
+        *Data = ~(*Data) + 1;
+    }
+    return EXIT_SUCCESS;
+}
+
+int isData(int c)
+{
+    return (c >> 14);
 }

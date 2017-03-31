@@ -1,18 +1,13 @@
-//
-// Created by direnol on 24.02.17.
-//
-
-
 #include <fcntl.h>
-#include "rk.h"
+#include "head/rk.h"
 
-enum ERRORS rk_readkey(KEYS *key) {
+int rk_readkey(KEYS *key) {
     char read_key[7];
     *key = no_key;
     memset(read_key, 0, sizeof(read_key));
     if (((int) read(STDIN_FILENO, read_key, 6)) < 0) {
         perror("read");
-        return ERROR;
+        return EXIT_FAILURE;
     } else {
         if (read_key[0] == 't')
             *key = keyt;
@@ -45,54 +40,54 @@ enum ERRORS rk_readkey(KEYS *key) {
         if ((read_key[0] == '\033') && (read_key[1] == '[') && (read_key[2] == 'B'))
             *key = key_down;
     }
-    return SUCCESS;
+    return EXIT_SUCCESS;
 }
 
-enum ERRORS rk_mytermsave() {
+int rk_mytermsave() {
     struct termios opt;
     int file = creat("TermSet", 0644);
     if (file == -1) {
         fprintf(stderr, "Cannot create TermSet\n");
         close(file);
-        return ERROR;
+        return EXIT_FAILURE;
     }
     tcgetattr(STDIN_FILENO, &opt);
     if (write(file, &opt, sizeof(opt)) < 1) {
         fprintf(stderr, "Cannot write TermSet\n");
         close(file);
-        return ERROR;
+        return EXIT_FAILURE;
     }
     close(file);
-    return SUCCESS;
+    return EXIT_SUCCESS;
 }
 
-enum ERRORS rk_mytermstore()
+int rk_mytermstore()
 {
     struct termios opt;
     int file = open("TermSet", O_RDONLY);
     if (file == -1) {
         fprintf(stderr, "Cannot open TermSet\n");
         close(file);
-        return ERROR;
+        return EXIT_FAILURE;
     }
     if (read(file, &opt, sizeof(opt)) < 1) {
         fprintf(stderr, "Cannot read TermSet\n");
         close(file);
-        return ERROR;
+        return EXIT_FAILURE;
     }
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &opt)) {
         close(file);
         fprintf(stderr, "Set\n");
-        return ERROR;
+        return EXIT_FAILURE;
     }
     close(file);
-    return SUCCESS;
+    return EXIT_SUCCESS;
 }
 
-enum ERRORS rk_mytermregime(int regime, cc_t vtime, cc_t vmin, int echo, int sigint) {
+int rk_mytermregime(int regime, cc_t vtime, cc_t vmin, int echo, int sigint) {
     struct termios tcset;
     if ((regime < 0) || (vtime < 0) || (vmin < 0) || (echo < 0) || (sigint < 0))
-        return ERROR;//если не поступили параметры
+        return EXIT_FAILURE;//если не поступили параметры
 
     tcgetattr(STDIN_FILENO, &tcset);
     if (regime) {
@@ -116,5 +111,5 @@ enum ERRORS rk_mytermregime(int regime, cc_t vtime, cc_t vmin, int echo, int sig
 
     tcsetattr(STDIN_FILENO, TCIFLUSH, &tcset);
 
-    return SUCCESS;
+    return EXIT_SUCCESS;
 }

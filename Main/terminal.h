@@ -1,26 +1,35 @@
 #ifndef ARCH_TERMINAL_H
 #define ARCH_TERMINAL_H
 
-#include "../lab1/SimpleComputer.h"
-#include "../lab2/term.h"
-#include "../lab3/graph.h"
-#include "../lab4/rk.h"
+#include "../lab1/head/SimpleComputer.h"
+#include "../lab2/head/term.h"
+#include "../lab3/head/graph.h"
+#include "../lab4/head/rk.h"
 
 struct coord {
-    uint8_t x;
-    uint8_t y;
-}xy;
+    int x;
+    int y;
+} xy;
 
-uint32_t big[17 * 2];
+
+int big[19 * 2];
 
 int init_data();
+
 int box_print();
-int print_char(char x, uint8_t a, uint8_t b, enum COLORS_TERM fg, enum COLORS_TERM bg);
-void memory_print(uint8_t, enum COLORS_TERM, enum COLORS_TERM);
-int print_BC(uint16_t symb, enum COLORS_TERM fg, enum COLORS_TERM bg);
-uint8_t readInt(int size, uint8_t *oper, uint16_t *val);
-void move(KEYS);
-uint8_t inp();
-uint16_t getMem(uint16_t);
+
+int print_char(char x, int a, int b, enum COLORS_TERM fg, enum COLORS_TERM bg);
+
+int memory_print(int, enum COLORS_TERM, enum COLORS_TERM);
+
+int print_BC(int symb, enum COLORS_TERM fg, enum COLORS_TERM bg);
+
+int readInt(int size, int *oper, int *val);
+
+int move(KEYS);
+
+int inp();
+
+int getMem(int);
 
 #endif //ARCH_TERMINAL_H

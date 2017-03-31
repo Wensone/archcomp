@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(SOURCE_FILES
     main.c)
 
-set(lib SimpleComputer.c SimpleComputer.h)
+set(lib SimpleComputer.c head/SimpleComputer.h)
 
 add_library(sc ${lib})
 

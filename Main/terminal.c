@@ -1,153 +1,167 @@
 #include "terminal.h"
 
-int box_print() {
-    mt_clscr();
+int box_print()
+{
+    if (mt_clscr()) return EXIT_FAILURE;
 
-    bc_box(1, 1, 70, 12);
-    mt_gotoXY(30, 1);
-    write(STDOUT_FILENO, "Memory", 6);
+    if (bc_box(1, 1, 70, 12)) return EXIT_FAILURE;
+    if (mt_gotoXY(30, 1)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "Memory", 6)) return EXIT_FAILURE;
 
-    bc_box(72, 1, 20, 3);
-    mt_gotoXY(77, 1);
-    write(STDOUT_FILENO, "Accumulator", 11);
+    if (bc_box(72, 1, 20, 3)) return EXIT_FAILURE;
+    if (mt_gotoXY(77, 1)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "Accumulator", 11)) return EXIT_FAILURE;
 
-    bc_box(72, 4, 20, 3);
-    mt_gotoXY(73, 4);
-    write(STDOUT_FILENO, "InstructionCounter", 18);
+    if (bc_box(72, 4, 20, 3)) return EXIT_FAILURE;
+    if (mt_gotoXY(73, 4)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "InstructionCounter", 18)) return EXIT_FAILURE;
 
-    bc_box(72, 7, 20, 3);
-    mt_gotoXY(77, 7);
-    write(STDOUT_FILENO, "Operation", 9);
+    if (bc_box(72, 7, 20, 3)) return EXIT_FAILURE;
+    if (mt_gotoXY(77, 7)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "Operation", 9)) return EXIT_FAILURE;
 
-    bc_box(72, 10, 20, 3);
-    mt_gotoXY(79, 10);
-    write(STDOUT_FILENO, "Flags", 5);
+    if (bc_box(72, 10, 20, 3)) return EXIT_FAILURE;
+    if (mt_gotoXY(79, 10)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "Flags", 5)) return EXIT_FAILURE;
 
-    bc_box(1, 13, 46, 10); // big chars
+    if (bc_box(1, 13, 46, 10)) return EXIT_FAILURE; // big chars
 
 
-    bc_box(47, 13, 45, 10);
-    mt_gotoXY(49, 13);
-    write(STDOUT_FILENO, "Keys", 4);
+    if (bc_box(47, 13, 45, 10)) return EXIT_FAILURE;
+    if (mt_gotoXY(49, 13)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "Keys", 4)) return EXIT_FAILURE;
 
-    mt_gotoXY(48, 14);
-    write(STDOUT_FILENO, "l - load", 8);
-    mt_gotoXY(48, 15);
-    write(STDOUT_FILENO, "s - save", 8);
-    mt_gotoXY(48, 16);
-    write(STDOUT_FILENO, "r - run", 7);
-    mt_gotoXY(48, 17);
-    write(STDOUT_FILENO, "t - step", 8);
-    mt_gotoXY(48, 18);
-    write(STDOUT_FILENO, "i - reset", 9);
-    mt_gotoXY(48, 19);
-    write(STDOUT_FILENO, "F5 - accumulator", 16);
-    mt_gotoXY(48, 20);
-    write(STDOUT_FILENO, "F6 - InstructionCounter", 23);
+    if (mt_gotoXY(48, 14)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "l - load", 8)) return EXIT_FAILURE;
+    if (mt_gotoXY(48, 15)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "s - save", 8)) return EXIT_FAILURE;
+    if (mt_gotoXY(48, 16)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "r - run", 7)) return EXIT_FAILURE;
+    if (mt_gotoXY(48, 17)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "t - step", 8)) return EXIT_FAILURE;
+    if (mt_gotoXY(48, 18)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "i - reset", 9)) return EXIT_FAILURE;
+    if (mt_gotoXY(48, 19)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "F5 - accumulator", 16)) return EXIT_FAILURE;
+    if (mt_gotoXY(48, 20)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "F6 - InstructionCounter", 23)) return EXIT_FAILURE;
 
-    mt_gotoXY(1, 23);
-    write(STDOUT_FILENO, "Input\\Output:", 14);
+    if (mt_gotoXY(1, 23)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "Input\\Output:", 14)) return EXIT_FAILURE;
 
-    mt_gotoXY(30, 15);
+    if (mt_gotoXY(30, 15)) return EXIT_FAILURE;
+    return EXIT_SUCCESS;
 }
 
-int print_char(char x, uint8_t a, uint8_t b, enum COLORS_TERM fg, enum COLORS_TERM bg) {
+int print_char(char x, int a, int b, enum COLORS_TERM fg, enum COLORS_TERM bg)
+{
     switch (x) {
         case ('0'): {
-            bc_printbigchar(big + A0, a, b, fg, bg);
+            if (bc_printbigchar(big + A0, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case ('1'): {
-            bc_printbigchar(big + A1, a, b, fg, bg);
+            if (bc_printbigchar(big + A1, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case ('2'): {
-            bc_printbigchar(big + A2, a, b, fg, bg);
+            if (bc_printbigchar(big + A2, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case ('3'): {
-            bc_printbigchar(big + A3, a, b, fg, bg);
+            if (bc_printbigchar(big + A3, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case ('4'): {
-            bc_printbigchar(big + A4, a, b, fg, bg);
+            if (bc_printbigchar(big + A4, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case ('5'): {
-            bc_printbigchar(big + A5, a, b, fg, bg);
+            if (bc_printbigchar(big + A5, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case ('6'): {
-            bc_printbigchar(big + A6, a, b, fg, bg);
+            if (bc_printbigchar(big + A6, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case ('7'): {
-            bc_printbigchar(big + A7, a, b, fg, bg);
+            if (bc_printbigchar(big + A7, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case ('8'): {
-            bc_printbigchar(big + A8, a, b, fg, bg);
+            if (bc_printbigchar(big + A8, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case ('9'): {
-            bc_printbigchar(big + A9, a, b, fg, bg);
+            if (bc_printbigchar(big + A9, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case ('A'): {
-            bc_printbigchar(big + AA, a, b, fg, bg);
+            if (bc_printbigchar(big + AA, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case ('B'): {
-            bc_printbigchar(big + AB, a, b, fg, bg);
+            if (bc_printbigchar(big + AB, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case ('C'): {
-            bc_printbigchar(big + AC, a, b, fg, bg);
+            if (bc_printbigchar(big + AC, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case ('D'): {
-            bc_printbigchar(big + AD, a, b, fg, bg);
+            if (bc_printbigchar(big + AD, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case ('E'): {
-            bc_printbigchar(big + AE, a, b, fg, bg);
+            if (bc_printbigchar(big + AE, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case ('F'): {
-            bc_printbigchar(big + AF, a, b, fg, bg);
+            if (bc_printbigchar(big + AF, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case '+': {
-            bc_printbigchar(big + APlus, a, b, fg, bg);
+            if (bc_printbigchar(big + APlus, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case '\0': {
-            bc_printbigchar(big + A0, a, b, fg, bg);
+            if (bc_printbigchar(big + A0, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case ':': {
-            bc_printbigchar(big + ADD, a, b, fg, bg);
+            if (bc_printbigchar(big + ADD, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         case '-': {
-            bc_printbigchar(big + AM, a, b, fg, bg);
+            if (bc_printbigchar(big + AM, a, b, fg, bg)) return EXIT_FAILURE;
             break;
         }
         default:
-            mt_clscr();
+            if (mt_clscr()) return EXIT_FAILURE;
             fprintf(stderr, "Incorrect char[%d]\n", x);
             rk_mytermstore();
-            return -1;
+            return EXIT_FAILURE;
     }
-    return 0;
+    return EXIT_SUCCESS;
 }
 
-void memory_print(uint8_t cur, enum COLORS_TERM fg, enum COLORS_TERM bg) {
-    uint16_t i, x, y;
+int memory_print(int cur, enum COLORS_TERM fg, enum COLORS_TERM bg)
+{
+    int i, x, y;
+    char buff[6];
+    int data;
+    if (sc_memoryGet((xy.x + xy.y * 10), &data)) return EXIT_FAILURE;
+    if (mt_gotoXY(79, 2)) return EXIT_FAILURE;
+    sprintf(buff, "%04d", data);
+    if (write(STDOUT_FILENO, buff, strlen(buff)))
+        return EXIT_FAILURE;
+
+    sprintf(buff, "%04d", counter);
+    if (mt_gotoXY(79, 5)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, buff, strlen(buff))) return EXIT_FAILURE;
 
     x = 2;
     y = 2;
-    uint16_t data;
     char buf[] = {0, 0, 0, 0, 0};
     for (i = 0; i < 100; i++) {
         mt_gotoXY(x, y);
@@ -155,7 +169,7 @@ void memory_print(uint8_t cur, enum COLORS_TERM fg, enum COLORS_TERM bg) {
         sc_memoryGet(i, &data);
         sprintf(buf, "+%04X", data);
 //        printf("+%0*X\n", 4, ram[i - 1]);
-        if ((cur ) == i) {
+        if ((cur) == i) {
             mt_setfgcolor(fg);
             mt_setbgcolor(bg);
 
@@ -174,53 +188,59 @@ void memory_print(uint8_t cur, enum COLORS_TERM fg, enum COLORS_TERM bg) {
     }
 }
 
-int init_data() {
-    int fd = open("BIG_CHARS", O_RDONLY);
+int init_data()
+{
+    int fd = open("../lab3/BIG_CHARS", O_RDONLY);
     if (fd == -1) {
         mt_clscr();
         fprintf(stderr, "Read Big_Chars\n");
         return -2;
     }
     int count;
-    if (bc_bigcharread(fd, big, 19, &count) == ERROR) {
+    if (bc_bigcharread(fd, big, 19, &count)) {
         fprintf(stderr, "Bad read BigChars\n");
         return -1;
     }
     if (count != 19) exit(22);
     xy.x = 0;
     xy.y = 0;
+
+    counter = 0;
+    accumulator = 0;
+    sc_regInit();
+    sc_memoryInit();
+
+    rk_mytermsave();
+    rk_mytermregime(0, 0, 1, 0, 1);
     return 0;
 }
 
-int print_BC(uint16_t symb, enum COLORS_TERM fg, enum COLORS_TERM bg) {
-    uint8_t x = 2,
+int print_BC(int symb, enum COLORS_TERM fg, enum COLORS_TERM bg)
+{
+    int x = 2,
             y = 14;
     char hex[6];
-    memset(hex, 0, 5);
-    if ((symb >> 14) & 1) {
-        symb &= ~(1 << 14);
-        if (symb >> 15) {
-            symb &= ~(1 << 15);
-            sprintf(hex, "%05d", symb);
-            hex[0] = '-';
-        } else {
-            sprintf(hex, "%05d", symb);
-        }
+    memset(hex, 0, 6);
+    if (isData(symb)) {
+        if (sc_getData(symb, &symb)) return EXIT_FAILURE;
+        sprintf(hex, "%05d", symb);
     } else {
-        uint8_t oper, val;
-        sc_commandDecode(symb, &oper, &val);
+        int oper, val;
+        if (sc_commandDecode(symb, &oper, &val)) return EXIT_FAILURE;
         sprintf(hex, "%02X:%02X", oper, val);
     }
-    for (int i = 0 ; i < 5; i++) {
-        if (-1 == print_char(hex[i], x, y, fg, bg)) {
+    for (int i = 0; i < 5; i++) {
+        if (print_char(hex[i], x, y, fg, bg)) {
             fprintf(stderr, "Bad print %d | %s\n", i, hex);
             exit(1);
         }
         x += 9;
     }
+    return EXIT_SUCCESS;
 }
 
-void move(KEYS key) {
+int move(KEYS key)
+{
     switch (key) {
         case (key_up) : {
             if (xy.x == 0 && xy.y == 0) break;
@@ -256,10 +276,11 @@ void move(KEYS key) {
             break;
         }
     }
-    memory_print((uint8_t) (xy.x + (xy.y * 10)), clr_brown, clr_red);
+    if (memory_print((xy.x + (xy.y * 10)), clr_brown, clr_red)) return EXIT_FAILURE;
 }
 
-uint8_t readInt(int size, uint8_t *oper, uint16_t *val) {
+int readInt(int size, int *oper, int *val)
+{
     char buff[size];
     for (int i = 0; i < size; i++) buff[i] = 0;
     int t = 0;
@@ -270,40 +291,41 @@ uint8_t readInt(int size, uint8_t *oper, uint16_t *val) {
     }
 
     if (t) {
-        *oper = (uint8_t) atoi(buff);
-        *val = (uint16_t) atoi(buff + t + 1);
+        *oper = atoi(buff);
+        *val = atoi(buff + t + 1);
         mt_gotoXY(40, 40);
 //        printf("%d | %d", *oper, *val);
         return 1;
     } else {
         if (buff[0] == '-') {
-            *val = (uint16_t) atoi(buff + 1);
+            *val = atoi(buff + 1);
             *val |= 1 << 15;
         } else {
-            *val = (uint16_t) atoi(buff);
+            *val = atoi(buff);
         }
     }
 //   printf("%s\n", buff);
     return 0;
 }
 
-uint8_t inp()
+int inp()
 {
-    uint16_t val;
-    uint8_t oper;
+    int val;
+    int oper;
     if (readInt(8, &oper, &val)) {
-        sc_commandEncode(oper, (uint8_t) val, &val);
-    } else if (1 & (val >> 14)) {
+        sc_commandEncode(oper, val, &val);
+    } else if (val > 9999) {
         return 1;
     } else {
         val |= 1 << 14;
     }
-    sc_memorySet((uint8_t) (xy.x + xy.y * 10), val);
+    sc_memorySet(xy.x + xy.y * 10, val);
     return 0;
 
 }
 
-uint16_t getMem(uint16_t x) {
+int getMem(int x)
+{
 
     return 0;
 }

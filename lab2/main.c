@@ -1,4 +1,4 @@
-#include "term.h"
+#include "head/term.h"
 
 int main()
 {

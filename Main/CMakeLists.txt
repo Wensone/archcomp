@@ -6,7 +6,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(SOURCE_FILES
     main.c terminal.c terminal.h)
 
-include_directories(../cmake-build-debug/*)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 

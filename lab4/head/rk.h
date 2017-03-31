@@ -1,7 +1,3 @@
-//
-// Created by direnol on 24.02.17.
-//
-
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
@@ -12,10 +8,6 @@
 #ifndef ARCH_RK_H
 #define ARCH_RK_H
 
-enum ERRORS {
-    ERROR = -1,
-    SUCCESS
-};
 
 typedef enum keys {
     keyt,
@@ -35,12 +27,12 @@ typedef enum keys {
     no_key
 } KEYS;
 
-enum ERRORS rk_readkey(KEYS *);
+int rk_readkey(KEYS *);
 
-enum ERRORS rk_mytermsave();
+int rk_mytermsave();
 
-enum ERRORS rk_mytermstore();
+int rk_mytermstore();
 
-enum ERRORS rk_mytermregime(int regime, cc_t vtime, cc_t vmin, int echo, int sigint);
+int rk_mytermregime(int regime, cc_t vtime, cc_t vmin, int echo, int sigint);
 
 #endif //ARCH_RK_H
