@@ -455,11 +455,26 @@ int checkData(char *str) {
 int checkCom(char *str) {
 	if (strlen(str) > 5) return EXIT_FAILURE;
 
-	if (str[0] < '0' && str[0] > '9') return EXIT_FAILURE;
-	if (str[1] < '0' && str[1] > '9') return EXIT_FAILURE;
-	if (str[2] != ':') return EXIT_FAILURE;
-	if (str[3] < '0' && str[3] > '9') return EXIT_FAILURE;
-	if (str[4] < '0' && str[4] > '9') return EXIT_FAILURE;
+	int dt = 0;
+	for (int i = 0; i < strlen(str); i++) {
+		if (str[i] == ':') {
+			dt = i;
+			str[i] = '\0';
+			break;
+		}
+	}
+
+	for (int i = 0; str[i] != '\0'; i++) {
+		if (strlen(str) == 1 || strlen(str) > 2) return EXIT_FAILURE;
+
+		if (str[i] < '0' && str[i] > '9') return EXIT_FAILURE;
+	}
+
+	for (int i = dt + 1; str[i] != '\0'; i++) {
+		if (strlen(str + dt + 1) == 1 || strlen(str + dt + 1) > 2) return EXIT_FAILURE;
+
+		if (str[i] < '0' && str[i] > '9') return EXIT_FAILURE;
+	}
 
 	return EXIT_SUCCESS;
 }
