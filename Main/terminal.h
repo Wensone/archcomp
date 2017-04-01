@@ -36,4 +36,14 @@ int printCount();
 
 int printFLAGS();
 
+/* my space; DON'T TOUCH */
+
+int IOcorrect(char *);
+
+int checkData(char *);
+
+int checkCom(char *);
+
+/* my space; DON'T TOUCH */
+
 #endif //ARCH_TERMINAL_H

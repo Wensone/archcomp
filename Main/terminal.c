@@ -356,4 +356,46 @@ int printFLAGS()
     return EXIT_SUCCESS;
 }
 
+/* my space; DON'T TOUCH */
 
+int IOcorrect(char *str) {
+	int data = checkData(str);
+	int com = checkCom(str);
+
+	return (data & com);
+}
+
+int checkData(char *str) {
+	if (strlen(str) == 1) return EXIT_FAILURE;
+
+	if (str[0] == '-') {
+		if (strlen(str) > 6) return EXIT_FAILURE;
+
+		for (int i = 1; i < strlen(str); i++) {
+			if (str[i] < '0' && str[i] > '9') return EXIT_FAILURE;
+		}
+	} else if (str[0] >= '0' && str[0] <= '9') {
+		if (strlen(str) > 5) return EXIT_FAILURE;
+
+		for (int i = 1; i < strlen(str); i++) {
+			if (str[i] < '0' && str[i] > '9') return EXIT_FAILURE;
+		}
+	}
+
+	return EXIT_SUCCESS;
+}
+
+
+int checkCom(char *str) {
+	if (strlen(str) > 5) return EXIT_FAILURE;
+
+	if (str[0] < '0' && str[0] > '9') return EXIT_FAILURE;
+	if (str[1] < '0' && str[1] > '9') return EXIT_FAILURE;
+	if (str[2] != ':') return EXIT_FAILURE;
+	if (str[3] < '0' && str[3] > '9') return EXIT_FAILURE;
+	if (str[4] < '0' && str[4] > '9') return EXIT_FAILURE;
+
+	return EXIT_SUCCESS;
+}
+
+/* my space; DON'T TOUCH */
