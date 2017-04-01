@@ -43,4 +43,14 @@ void q_free();
 int printIO();
 
 
+/* my space; DON'T TOUCH */
+
+int IOcorrect(char *);
+
+int checkData(char *);
+
+int checkCom(char *);
+
+/* my space; DON'T TOUCH */
+
 #endif //ARCH_TERMINAL_H
