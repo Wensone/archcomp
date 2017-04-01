@@ -2,11 +2,21 @@
 
 int main()
 {
-    box_print();
-    memory_print(0, clr_green, clr_magenta);
-    init_data();
+    if (box_print()) {
+        fprintf(stderr, "box_print\n");
+        return EXIT_FAILURE;
+    }
+
+    if (memory_print(0, clr_green, clr_magenta)) {
+        fprintf(stderr, "memory_print\n");
+        return EXIT_FAILURE;
+    };
+    if (init_data()) {
+        fprintf(stderr, "init_data\n");
+        return EXIT_FAILURE;
+    }
     char FileMemory[16] = "MemData";
-    sc_memorySet(77, 0x13);
+
     KEYS key = no_key;
     while (key != key_esc) {
         rk_readkey(&key);

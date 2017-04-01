@@ -6,48 +6,48 @@ int box_print()
 
     if (bc_box(1, 1, 70, 12)) return EXIT_FAILURE;
     if (mt_gotoXY(30, 1)) return EXIT_FAILURE;
-    if (write(STDOUT_FILENO, "Memory", 6)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "Memory", 6) < 0) return EXIT_FAILURE;
 
     if (bc_box(72, 1, 20, 3)) return EXIT_FAILURE;
     if (mt_gotoXY(77, 1)) return EXIT_FAILURE;
-    if (write(STDOUT_FILENO, "Accumulator", 11)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "Accumulator", 11) < 0) return EXIT_FAILURE;
 
     if (bc_box(72, 4, 20, 3)) return EXIT_FAILURE;
     if (mt_gotoXY(73, 4)) return EXIT_FAILURE;
-    if (write(STDOUT_FILENO, "InstructionCounter", 18)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "InstructionCounter", 18) < 0) return EXIT_FAILURE;
 
     if (bc_box(72, 7, 20, 3)) return EXIT_FAILURE;
     if (mt_gotoXY(77, 7)) return EXIT_FAILURE;
-    if (write(STDOUT_FILENO, "Operation", 9)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "Operation", 9) < 0) return EXIT_FAILURE;
 
     if (bc_box(72, 10, 20, 3)) return EXIT_FAILURE;
     if (mt_gotoXY(79, 10)) return EXIT_FAILURE;
-    if (write(STDOUT_FILENO, "Flags", 5)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "Flags", 5) < 0) return EXIT_FAILURE;
 
     if (bc_box(1, 13, 46, 10)) return EXIT_FAILURE; // big chars
 
 
     if (bc_box(47, 13, 45, 10)) return EXIT_FAILURE;
     if (mt_gotoXY(49, 13)) return EXIT_FAILURE;
-    if (write(STDOUT_FILENO, "Keys", 4)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "Keys", 4) < 0) return EXIT_FAILURE;
 
     if (mt_gotoXY(48, 14)) return EXIT_FAILURE;
-    if (write(STDOUT_FILENO, "l - load", 8)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "l - load", 8) < 0) return EXIT_FAILURE;
     if (mt_gotoXY(48, 15)) return EXIT_FAILURE;
-    if (write(STDOUT_FILENO, "s - save", 8)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "s - save", 8) < 0) return EXIT_FAILURE;
     if (mt_gotoXY(48, 16)) return EXIT_FAILURE;
-    if (write(STDOUT_FILENO, "r - run", 7)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "r - run", 7) < 0) return EXIT_FAILURE;
     if (mt_gotoXY(48, 17)) return EXIT_FAILURE;
-    if (write(STDOUT_FILENO, "t - step", 8)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "t - step", 8) < 0) return EXIT_FAILURE;
     if (mt_gotoXY(48, 18)) return EXIT_FAILURE;
-    if (write(STDOUT_FILENO, "i - reset", 9)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "i - reset", 9) < 0) return EXIT_FAILURE;
     if (mt_gotoXY(48, 19)) return EXIT_FAILURE;
-    if (write(STDOUT_FILENO, "F5 - accumulator", 16)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "F5 - accumulator", 16) < 0) return EXIT_FAILURE;
     if (mt_gotoXY(48, 20)) return EXIT_FAILURE;
-    if (write(STDOUT_FILENO, "F6 - InstructionCounter", 23)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "F6 - InstructionCounter", 23) < 0) return EXIT_FAILURE;
 
     if (mt_gotoXY(1, 23)) return EXIT_FAILURE;
-    if (write(STDOUT_FILENO, "Input\\Output:", 14)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, "Input\\Output:", 14) < 0) return EXIT_FAILURE;
 
     if (mt_gotoXY(30, 15)) return EXIT_FAILURE;
     return EXIT_SUCCESS;
@@ -147,59 +147,52 @@ int print_char(char x, int a, int b, enum COLORS_TERM fg, enum COLORS_TERM bg)
 
 int memory_print(int cur, enum COLORS_TERM fg, enum COLORS_TERM bg)
 {
+    if (printAccum()) return EXIT_FAILURE;
+    if (printCount()) return EXIT_FAILURE;
+    if (printFLAGS()) return EXIT_FAILURE;
     int i, x, y;
-    char buff[6];
     int data;
-    if (sc_memoryGet((xy.x + xy.y * 10), &data)) return EXIT_FAILURE;
-    if (mt_gotoXY(79, 2)) return EXIT_FAILURE;
-    sprintf(buff, "%04d", data);
-    if (write(STDOUT_FILENO, buff, strlen(buff)))
-        return EXIT_FAILURE;
-
-    sprintf(buff, "%04d", counter);
-    if (mt_gotoXY(79, 5)) return EXIT_FAILURE;
-    if (write(STDOUT_FILENO, buff, strlen(buff))) return EXIT_FAILURE;
 
     x = 2;
     y = 2;
     char buf[] = {0, 0, 0, 0, 0};
     for (i = 0; i < 100; i++) {
-        mt_gotoXY(x, y);
+        if (mt_gotoXY(x, y)) return EXIT_FAILURE;
         y++;
-        sc_memoryGet(i, &data);
+        if (sc_memoryGet(i, &data)) return EXIT_FAILURE;
         sprintf(buf, "+%04X", data);
-//        printf("+%0*X\n", 4, ram[i - 1]);
         if ((cur) == i) {
-            mt_setfgcolor(fg);
-            mt_setbgcolor(bg);
+            if (mt_setfgcolor(fg)) return EXIT_FAILURE;
+            if (mt_setbgcolor(bg)) return EXIT_FAILURE;
 
-            write(STDOUT_FILENO, buf, strlen(buf));
-            print_BC(data, clr_cyan, clr_black);
+            if (write(STDOUT_FILENO, buf, strlen(buf)) < 0) return EXIT_FAILURE;
+            if (print_BC(data, clr_cyan, clr_black)) return EXIT_FAILURE;
 
-            mt_setfgcolor(clr_default);
-            mt_setbgcolor(clr_default);
+            if (mt_setfgcolor(clr_default)) return EXIT_FAILURE;
+            if (mt_setbgcolor(clr_default)) return EXIT_FAILURE;
         } else {
-            write(STDOUT_FILENO, buf, strlen(buf));
+            if (write(STDOUT_FILENO, buf, strlen(buf)) < 0) return EXIT_FAILURE;
         }
         if (((i + 1) % 10) == 0) {
             x += 7;
             y = 2;
         }
     }
+    return EXIT_SUCCESS;
 }
 
 int init_data()
 {
     int fd = open("../lab3/BIG_CHARS", O_RDONLY);
     if (fd == -1) {
-        mt_clscr();
+        if (mt_clscr()) return EXIT_FAILURE;
         fprintf(stderr, "Read Big_Chars\n");
-        return -2;
+        return EXIT_FAILURE;
     }
     int count;
     if (bc_bigcharread(fd, big, 19, &count)) {
         fprintf(stderr, "Bad read BigChars\n");
-        return -1;
+        return EXIT_FAILURE;
     }
     if (count != 19) exit(22);
     xy.x = 0;
@@ -207,12 +200,12 @@ int init_data()
 
     counter = 0;
     accumulator = 0;
-    sc_regInit();
-    sc_memoryInit();
+    if (sc_regInit()) return EXIT_FAILURE;
+    if (sc_memoryInit()) return EXIT_FAILURE;
 
-    rk_mytermsave();
-    rk_mytermregime(0, 0, 1, 0, 1);
-    return 0;
+    if (rk_mytermsave()) return EXIT_FAILURE;
+    if (rk_mytermregime(0, 0, 1, 0, 1)) return EXIT_FAILURE;
+    return EXIT_SUCCESS;
 }
 
 int print_BC(int symb, enum COLORS_TERM fg, enum COLORS_TERM bg)
@@ -324,9 +317,43 @@ int inp()
 
 }
 
-int getMem(int x)
+int printAccum()
 {
-
+    char buff[6];
+    sprintf(buff, "%04d", getAccum());
+    if (mt_gotoXY(79, 2)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, buff, strlen(buff)) < 0) return EXIT_FAILURE;
     return 0;
 }
+
+int printCount()
+{
+    char buff[6];
+    sprintf(buff, "%04d", getCount());
+    if (mt_gotoXY(79, 5)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, buff, strlen(buff)) < 0) return EXIT_FAILURE;
+    return EXIT_SUCCESS;
+}
+
+/*ETM0P*/
+int printFLAGS()
+{
+    char freg[] = "- - - - -";
+    int reg;
+    if (sc_regGet(FLAG_E, &reg)) return EXIT_FAILURE;
+    if (reg) freg[0] = 'E';
+
+    if (sc_regGet(FLAG_T, &reg)) return EXIT_FAILURE;
+    if (reg) freg[2] = 'T';
+    if (sc_regGet(FLAG_M, &reg)) return EXIT_FAILURE;
+    if (reg) freg[4] = 'M';
+    if (sc_regGet(FLAG_0, &reg)) return EXIT_FAILURE;
+    if (reg) freg[6] = '0';
+    if (sc_regGet(FLAG_P, &reg)) return EXIT_FAILURE;
+    if (reg) freg[8] = 'P';
+    if (mt_gotoXY(77, 11)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, freg, strlen(freg)) < 0) return EXIT_FAILURE;
+    return EXIT_SUCCESS;
+}
+
 

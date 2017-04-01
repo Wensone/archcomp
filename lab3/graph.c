@@ -34,18 +34,18 @@ int bc_box(int x1, int y1, int x2, int y2)
     for (int i = 1; (y1 + i) < (y1 + y2) - 1; i++) {
         if (mt_gotoXY(x1, (y1 + i))) return EXIT_FAILURE;
         if (bc_printA(CHAR_VERT)) return EXIT_FAILURE;
-        if (mt_gotoXY(((x1 + x2) - 1), (int) (y1 + i))) return EXIT_FAILURE;
+        if (mt_gotoXY(((x1 + x2) - 1), (y1 + i))) return EXIT_FAILURE;
         if (bc_printA(CHAR_VERT)) return EXIT_FAILURE;
     }
 
     if (mt_gotoXY(x1, y1)) return EXIT_FAILURE;
     if (bc_printA(CHAR_TL)) return EXIT_FAILURE;
-    if (mt_gotoXY((int) ((x1 + x2) - 1), y1)) return EXIT_FAILURE;
+    if (mt_gotoXY(((x1 + x2) - 1), y1)) return EXIT_FAILURE;
     if (bc_printA(CHAR_TR)) return EXIT_FAILURE;
 
     if (mt_gotoXY(x1, (int) (y1 + y2 - 1))) return EXIT_FAILURE;
     if (bc_printA(CHAR_DL)) return EXIT_FAILURE;
-    if (mt_gotoXY((int) (x1 + x2 - 1), (int) (y1 + y2 - 1))) return EXIT_FAILURE;
+    if (mt_gotoXY((x1 + x2 - 1), (int) (y1 + y2 - 1))) return EXIT_FAILURE;
     if (bc_printA(CHAR_DR)) return EXIT_FAILURE;
     return EXIT_SUCCESS;
 }

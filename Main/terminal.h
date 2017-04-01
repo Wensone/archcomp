@@ -11,8 +11,8 @@ struct coord {
     int y;
 } xy;
 
-
 int big[19 * 2];
+
 
 int init_data();
 
@@ -30,6 +30,10 @@ int move(KEYS);
 
 int inp();
 
-int getMem(int);
+int printAccum();
+
+int printCount();
+
+int printFLAGS();
 
 #endif //ARCH_TERMINAL_H

@@ -138,3 +138,32 @@ int isData(int c)
 {
     return (c >> 14);
 }
+
+int setAccum(int v)
+{
+    if (abs(v) > 0x3FFF) return EXIT_FAILURE;
+    accumulator = v;
+    return EXIT_SUCCESS;
+}
+
+int getAccum()
+{
+    return accumulator;
+}
+
+int IncCount()
+{
+    ++counter;
+}
+
+int zeroCount()
+{
+    counter = 0;
+    return EXIT_SUCCESS;
+}
+
+int getCount()
+{
+    return counter;
+}
+

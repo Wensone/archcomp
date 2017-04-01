@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 #define SIZE 100
-
+/*ETM0P*/
 #define FLAG_P 0x1
 #define FLAG_0 0x2
 #define FLAG_M 0x4
@@ -37,5 +37,10 @@ int sc_commandDecode(int, int*, int*);
 int sc_setData(int, int*);
 int sc_getData(int, int*);
 int isData(int c);
+int setAccum(int v);
+int getAccum();
+int IncCount();
+int getCount();
+int zeroCount();
 
 #endif // simplcomp_h
