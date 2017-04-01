@@ -263,7 +263,7 @@ int main()
         }
     }
 
-    int file = open("BIG_intS", O_CREAT | O_TRUNC | O_RDWR,
+    int file = open("BIG_CHARS", O_CREAT | O_TRUNC | O_RDWR,
                     S_IWRITE | S_IREAD);
     if (file == -1) {
         perror("Created ");

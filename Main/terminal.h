@@ -12,7 +12,7 @@ struct coord {
 } xy;
 
 int big[19 * 2];
-
+char *qIO[5];
 
 int init_data();
 
@@ -24,7 +24,7 @@ int memory_print(int, enum COLORS_TERM, enum COLORS_TERM);
 
 int print_BC(int symb, enum COLORS_TERM fg, enum COLORS_TERM bg);
 
-int readInt(int size, int *oper, int *val);
+int readInt(int size, int *val);
 
 int move(KEYS);
 
@@ -35,5 +35,12 @@ int printAccum();
 int printCount();
 
 int printFLAGS();
+
+int q_add(char *message);
+
+void q_free();
+
+int printIO();
+
 
 #endif //ARCH_TERMINAL_H

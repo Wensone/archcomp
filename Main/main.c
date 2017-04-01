@@ -18,6 +18,7 @@ int main()
     char FileMemory[16] = "MemData";
 
     KEYS key = no_key;
+    move(no_key);
     while (key != key_esc) {
         rk_readkey(&key);
         switch (key) {
@@ -57,22 +58,25 @@ int main()
                 break;
             }
             case (key_enter) : {
-                mt_gotoXY((uint16_t) (2 + (xy.y * 7)), (uint16_t) (xy.x + 2));
+                mt_gotoXY((2 + (xy.y * 7)), (xy.x + 2));
                 write(STDOUT_FILENO, "     ", 5);
-                mt_gotoXY((uint16_t) (2 + (xy.y * 7)), (uint16_t) (xy.x + 2));
+                mt_gotoXY((2 + (xy.y * 7)), (xy.x + 2));
                 rk_mytermregime(1, 0, 0, 1, 1);
                 mt_setfgcolor(clr_blue);
 
                 if (inp()) {
-                    mt_gotoXY(1, 24);
-                    write(STDOUT_FILENO, "ERROR READ", 10);
                     rk_mytermregime(0, 0, 1, 0, 1);
                     mt_setfgcolor(clr_default);
-                    mt_clscr();
-                    box_print();
-                    memory_print((uint8_t) (xy.x + xy.y * 10), clr_green, clr_magenta);
-                    mt_gotoXY(1, 24);
-                    write(STDOUT_FILENO, "ERROR READ", 10);
+                    if (q_add("ERROR READ")) {
+                        mt_clscr();
+                        fprintf(stderr, "Bal request by queue\n");
+                        return EXIT_FAILURE;
+                    };
+                    if (printIO()) {
+                        mt_clscr();
+                        fprintf(stderr, "Bad request bu print queue\n");
+                        return EXIT_FAILURE;
+                    };
                     break;
                 }
                 mt_setfgcolor(clr_default);
@@ -87,6 +91,7 @@ int main()
         }
     }
 
+    q_free();
     rk_mytermstore();
     return 0;
 }

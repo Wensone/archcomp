@@ -155,12 +155,17 @@ int memory_print(int cur, enum COLORS_TERM fg, enum COLORS_TERM bg)
 
     x = 2;
     y = 2;
-    char buf[] = {0, 0, 0, 0, 0};
+    char buf[] = {0, 0, 0, 0, 0, 0, 0};
     for (i = 0; i < 100; i++) {
         if (mt_gotoXY(x, y)) return EXIT_FAILURE;
         y++;
         if (sc_memoryGet(i, &data)) return EXIT_FAILURE;
-        sprintf(buf, "+%04X", data);
+        if (isData(data)) {
+            sprintf(buf, "%05X", data);
+        } else {
+            sprintf(buf, "+%04X", data);
+        }
+
         if ((cur) == i) {
             if (mt_setfgcolor(fg)) return EXIT_FAILURE;
             if (mt_setbgcolor(bg)) return EXIT_FAILURE;
@@ -170,8 +175,14 @@ int memory_print(int cur, enum COLORS_TERM fg, enum COLORS_TERM bg)
 
             if (mt_setfgcolor(clr_default)) return EXIT_FAILURE;
             if (mt_setbgcolor(clr_default)) return EXIT_FAILURE;
+            if (x != 65) {
+                if (write(STDOUT_FILENO, "  ", 2) < 0) return EXIT_FAILURE;
+            }
         } else {
             if (write(STDOUT_FILENO, buf, strlen(buf)) < 0) return EXIT_FAILURE;
+            if (x != 65) {
+                if (write(STDOUT_FILENO, "  ", 2) < 0) return EXIT_FAILURE;
+            }
         }
         if (((i + 1) % 10) == 0) {
             x += 7;
@@ -205,6 +216,10 @@ int init_data()
 
     if (rk_mytermsave()) return EXIT_FAILURE;
     if (rk_mytermregime(0, 0, 1, 0, 1)) return EXIT_FAILURE;
+
+    memset(qIO, 0x0, 5);
+    sc_regSet(FLAG_T, 1);
+
     return EXIT_SUCCESS;
 }
 
@@ -216,7 +231,8 @@ int print_BC(int symb, enum COLORS_TERM fg, enum COLORS_TERM bg)
     memset(hex, 0, 6);
     if (isData(symb)) {
         if (sc_getData(symb, &symb)) return EXIT_FAILURE;
-        sprintf(hex, "%05d", symb);
+        sprintf(hex, "%05X", abs(symb));
+        if (symb < 0) hex[0] = '-';
     } else {
         int oper, val;
         if (sc_commandDecode(symb, &oper, &val)) return EXIT_FAILURE;
@@ -270,50 +286,60 @@ int move(KEYS key)
         }
     }
     if (memory_print((xy.x + (xy.y * 10)), clr_brown, clr_red)) return EXIT_FAILURE;
+    return EXIT_SUCCESS;
 }
 
-int readInt(int size, int *oper, int *val)
+int readInt(int size, int *val)
 {
     char buff[size];
-    for (int i = 0; i < size; i++) buff[i] = 0;
+    memset(buff, 0, (size_t) size);
     int t = 0;
 
-    for (int i = 0; buff[i - 1] != '\n'; i++) {
+    for (int i = 0; i < size; i++) {
         read(STDIN_FILENO, (buff + i), 1);
+
         if (buff[i] == ':') t = i;
+
+        if (buff[i] == '\n') {
+            buff[i] = '\0';
+            break;
+        }
+
+    }
+    if ((*buff) == ':') return EXIT_FAILURE;
+
+    if (!t) {
+        if (((*buff) == '-' && strlen(buff) > 6) || (*buff == '-' && (*(buff + 1) == '\0'))) return EXIT_FAILURE;
+        else if ((*buff) != '-' && strlen(buff) > 5) return EXIT_FAILURE;
     }
 
+    if (t && strlen(buff) > 5) return EXIT_FAILURE;
+    else if (t && buff[t + 1] == '\0') return EXIT_FAILURE;
+
+    int operation, value;
     if (t) {
-        *oper = atoi(buff);
-        *val = atoi(buff + t + 1);
-        mt_gotoXY(40, 40);
-//        printf("%d | %d", *oper, *val);
-        return 1;
+        buff[t] = '\0';
+
+        sscanf(buff, "%X", &(operation));
+        sscanf((buff + t + 1), "%X", &(value));
+
+        if (sc_commandEncode(operation, value, val)) return EXIT_FAILURE;
     } else {
-        if (buff[0] == '-') {
-            *val = atoi(buff + 1);
-            *val |= 1 << 15;
-        } else {
-            *val = atoi(buff);
-        }
+        sscanf(buff, "%d", val);
+        if (sc_setData((*val), val)) return EXIT_FAILURE;
     }
-//   printf("%s\n", buff);
-    return 0;
+
+    return EXIT_SUCCESS;
 }
 
 int inp()
 {
     int val;
-    int oper;
-    if (readInt(8, &oper, &val)) {
-        sc_commandEncode(oper, val, &val);
-    } else if (val > 9999) {
-        return 1;
-    } else {
-        val |= 1 << 14;
+    if (readInt(20, &val)) {
+        return EXIT_FAILURE;
     }
-    sc_memorySet(xy.x + xy.y * 10, val);
-    return 0;
+    if (sc_memorySet(xy.x + xy.y * 10, val)) return EXIT_FAILURE;
+    return EXIT_SUCCESS;
 
 }
 
@@ -353,6 +379,46 @@ int printFLAGS()
     if (reg) freg[8] = 'P';
     if (mt_gotoXY(77, 11)) return EXIT_FAILURE;
     if (write(STDOUT_FILENO, freg, strlen(freg)) < 0) return EXIT_FAILURE;
+    return EXIT_SUCCESS;
+}
+
+int q_add(char *message)
+{
+    if (!message)
+        return EXIT_FAILURE;
+
+    if (*(qIO + 4) == NULL) free(*(qIO + 4));
+    for (int i = 4; i > 0; --i) {
+        *(qIO + i) = *(qIO + i - 1);
+    }
+    *qIO = malloc(strlen(message) + 1);
+    if (!(*qIO))
+        return EXIT_FAILURE;
+
+    strcpy(*qIO, message);
+    return EXIT_SUCCESS;
+}
+
+void q_free()
+{
+    for (int i = 0; i < 5; ++i)
+        if (*(qIO + i)) free(*(qIO + i));
+}
+
+int printIO()
+{
+    if (mt_gotoXY(1, 24)) return EXIT_FAILURE;
+    for (int i = 0; i < 5; ++i) {
+        for (int j = 0; j < 20; ++j) {
+            if (mt_gotoXY(1 + j, 24 + i)) return EXIT_FAILURE;
+            if (write(STDOUT_FILENO, " ", 1) < 0) return EXIT_FAILURE;
+        }
+    }
+    for (int i = 4; i >= 0; --i) {
+        if (mt_gotoXY(1, 24 + i)) return EXIT_FAILURE;
+        if (*(qIO + i))
+            if (write(STDOUT_FILENO, *(qIO + i), strlen(*(qIO + i))) < 0) return EXIT_FAILURE;
+    }
     return EXIT_SUCCESS;
 }
 
