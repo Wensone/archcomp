@@ -66,10 +66,9 @@ int sc_regSet(int reg, int value)
     if (value == 0) {
         Flags &= !reg;
     } else {
-        Flags &= reg;
+        Flags |= reg;
     }
     return EXIT_SUCCESS;
-
 }
 
 int sc_regGet(int reg, int *value)
@@ -109,7 +108,7 @@ int sc_commandDecode(int value, int *command, int *operand)
 
 int sc_setData(int Data, int *dest)
 {
-    if (abs(Data) >> 15 || abs(Data) >> 14) {
+    if (abs(Data) >> 15 || abs(Data) >> 14 || abs(Data) > 0x3FFF) {
         return EXIT_FAILURE;
     }
     *dest = abs(Data);
@@ -125,19 +124,17 @@ int sc_getData(int dest, int *Data)
     if (!((dest) >> 14)) {
         return EXIT_FAILURE;
     }
+
     *Data = dest;
     *Data &= ~(1 << 14);
     if ((dest) >> 15) {
-        *Data &= ~(1 << 15);
+        *Data &= ~(1 << 15); // инвертация в случае 1 на 16-м разряде
         *Data = ~(*Data) + 1;
     }
     return EXIT_SUCCESS;
 }
 
-int isData(int c){
-    if (abs(c) >> 15 || abs(c) >> 14) {
-        return EXIT_FAILURE;
-    }
-
+int isData(int c)
+{
     return (c >> 14);
 }
