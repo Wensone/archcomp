@@ -42,6 +42,8 @@ void q_free();
 
 int printIO();
 
+int printOperation();
+
 
 /* my space; DON'T TOUCH */
 

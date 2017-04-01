@@ -178,6 +178,7 @@ int memory_print(int cur, enum COLORS_TERM fg, enum COLORS_TERM bg)
             if (x != 65) {
                 if (write(STDOUT_FILENO, "  ", 2) < 0) return EXIT_FAILURE;
             }
+            printOperation();
         } else {
             if (write(STDOUT_FILENO, buf, strlen(buf)) < 0) return EXIT_FAILURE;
             if (x != 65) {
@@ -424,44 +425,64 @@ int printIO()
 
 /* my space; DON'T TOUCH */
 
-int IOcorrect(char *str) {
-	int data = checkData(str);
-	int com = checkCom(str);
+int IOcorrect(char *str)
+{
+    int data = checkData(str);
+    int com = checkCom(str);
 
-	return (data & com);
+    return (data & com);
 }
 
-int checkData(char *str) {
-	if (strlen(str) == 1) return EXIT_FAILURE;
+int checkData(char *str)
+{
+    if (strlen(str) == 1) return EXIT_FAILURE;
 
-	if (str[0] == '-') {
-		if (strlen(str) > 6) return EXIT_FAILURE;
+    if (str[0] == '-') {
+        if (strlen(str) > 6) return EXIT_FAILURE;
 
-		for (int i = 1; i < strlen(str); i++) {
-			if (str[i] < '0' && str[i] > '9') return EXIT_FAILURE;
-		}
-	} else if (str[0] >= '0' && str[0] <= '9') {
-		if (strlen(str) > 5) return EXIT_FAILURE;
+        for (int i = 1; i < strlen(str); i++) {
+            if (str[i] < '0' && str[i] > '9') return EXIT_FAILURE;
+        }
+    } else if (str[0] >= '0' && str[0] <= '9') {
+        if (strlen(str) > 5) return EXIT_FAILURE;
 
-		for (int i = 1; i < strlen(str); i++) {
-			if (str[i] < '0' && str[i] > '9') return EXIT_FAILURE;
-		}
-	}
+        for (int i = 1; i < strlen(str); i++) {
+            if (str[i] < '0' && str[i] > '9') return EXIT_FAILURE;
+        }
+    }
 
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
 
 
-int checkCom(char *str) {
-	if (strlen(str) > 5) return EXIT_FAILURE;
+int checkCom(char *str)
+{
+    if (strlen(str) > 5) return EXIT_FAILURE;
 
-	if (str[0] < '0' && str[0] > '9') return EXIT_FAILURE;
-	if (str[1] < '0' && str[1] > '9') return EXIT_FAILURE;
-	if (str[2] != ':') return EXIT_FAILURE;
-	if (str[3] < '0' && str[3] > '9') return EXIT_FAILURE;
-	if (str[4] < '0' && str[4] > '9') return EXIT_FAILURE;
+    if (str[0] < '0' && str[0] > '9') return EXIT_FAILURE;
+    if (str[1] < '0' && str[1] > '9') return EXIT_FAILURE;
+    if (str[2] != ':') return EXIT_FAILURE;
+    if (str[3] < '0' && str[3] > '9') return EXIT_FAILURE;
+    if (str[4] < '0' && str[4] > '9') return EXIT_FAILURE;
 
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
+}
+
+int printOperation()
+{
+    int operation = -1;
+    if (sc_memoryGet(xy.x + xy.y * 10, &operation)) return EXIT_FAILURE;
+    if (isData(operation)) return EXIT_SUCCESS;
+
+    int a, b;
+    if (sc_commandDecode(operation, &a, &b)) return EXIT_SUCCESS;
+    char o[6];
+    sprintf(o, "%02X:%02X", a, b);
+
+    if (mt_gotoXY(77, 8)) return EXIT_FAILURE;
+    if (write(STDOUT_FILENO, o, strlen(o)) < 0) return EXIT_FAILURE;
+
+    return EXIT_SUCCESS;
 }
 
 /* my space; DON'T TOUCH */
