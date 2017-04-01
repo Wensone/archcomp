@@ -141,7 +141,7 @@ int isData(int c)
 
 int setAccum(int v)
 {
-    if (abs(v) > 0x3FFF) return EXIT_FAILURE;
+    if (!isData(v)) return EXIT_FAILURE;
     accumulator = v;
     return EXIT_SUCCESS;
 }
@@ -165,5 +165,13 @@ int zeroCount()
 int getCount()
 {
     return counter;
+}
+
+int setCounter(int v)
+{
+    if (v < 0)
+        return EXIT_FAILURE;
+    counter = (unsigned int) v;
+    return EXIT_SUCCESS;
 }
 

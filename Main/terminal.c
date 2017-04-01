@@ -166,9 +166,14 @@ int memory_print(int cur, enum COLORS_TERM fg, enum COLORS_TERM bg)
             sprintf(buf, "+%04X", data);
         }
 
-        if ((cur) == i) {
-            if (mt_setfgcolor(fg)) return EXIT_FAILURE;
-            if (mt_setbgcolor(bg)) return EXIT_FAILURE;
+        if ((cur) == i || i == counter) {
+            if (i == cur) {
+                if (mt_setfgcolor(fg)) return EXIT_FAILURE;
+                if (mt_setbgcolor(bg)) return EXIT_FAILURE;
+            } else if (i == counter) {
+                if (mt_setfgcolor(clr_black)) return EXIT_FAILURE;
+                if (mt_setbgcolor(clr_blue)) return EXIT_FAILURE;
+            }
 
             if (write(STDOUT_FILENO, buf, strlen(buf)) < 0) return EXIT_FAILURE;
             if (print_BC(data, clr_cyan, clr_black)) return EXIT_FAILURE;
@@ -190,6 +195,7 @@ int memory_print(int cur, enum COLORS_TERM fg, enum COLORS_TERM bg)
             y = 2;
         }
     }
+    printAccum();
     return EXIT_SUCCESS;
 }
 
@@ -210,8 +216,8 @@ int init_data()
     xy.x = 0;
     xy.y = 0;
 
-    counter = 0;
-    accumulator = 0;
+    setCounter(0);
+    if (sc_setData(0, &accumulator)) return EXIT_FAILURE;
     if (sc_regInit()) return EXIT_FAILURE;
     if (sc_memoryInit()) return EXIT_FAILURE;
 
@@ -292,11 +298,11 @@ int move(KEYS key)
 
 int readInt(int size, int *val)
 {
-    char buff[size];
-    memset(buff, 0, (size_t) size);
+    char buff[64 + size];
+    memset(buff, 0, (size_t) (64 + size));
     int t = 0;
 
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < (size + 64); i++) {
         read(STDIN_FILENO, (buff + i), 1);
 
         if (buff[i] == ':') t = i;
@@ -307,28 +313,42 @@ int readInt(int size, int *val)
         }
 
     }
-    if ((*buff) == ':') return EXIT_FAILURE;
 
-    if (!t) {
-        if (((*buff) == '-' && strlen(buff) > 6) || (*buff == '-' && (*(buff + 1) == '\0'))) return EXIT_FAILURE;
-        else if ((*buff) != '-' && strlen(buff) > 5) return EXIT_FAILURE;
+    if (IOcorrect(buff)) {
+        char err[256];
+        sprintf(err, "Error read : %s", buff);
+        if (q_add(err)) exit(11);
+        return EXIT_FAILURE;
     }
-
-    if (t && strlen(buff) > 5) return EXIT_FAILURE;
-    else if (t && buff[t + 1] == '\0') return EXIT_FAILURE;
-
     int operation, value;
     if (t) {
         buff[t] = '\0';
 
         sscanf(buff, "%X", &(operation));
         sscanf((buff + t + 1), "%X", &(value));
+        buff[t] = ':';
 
-        if (sc_commandEncode(operation, value, val)) return EXIT_FAILURE;
+        if (sc_commandEncode(operation, value, val)) {
+            char err[256];
+            sprintf(err, "Error read[c] : %s", buff);
+            if (q_add(err)) exit(11);
+            return EXIT_FAILURE;
+        }
     } else {
         sscanf(buff, "%d", val);
-        if (sc_setData((*val), val)) return EXIT_FAILURE;
+        if (sc_setData((*val), val)) {
+            char err[256];
+            sprintf(err, "Error read[d] : %s", buff);
+            if (q_add(err)) exit(11);
+            return EXIT_FAILURE;
+        }
     }
+
+    char *io = malloc(9 + strlen(buff));
+    strcpy(io, "Write : ");
+    strcat(io, buff);
+    free(io);
+    if (q_add(io)) exit(11);
 
     return EXIT_SUCCESS;
 }
@@ -346,8 +366,10 @@ int inp()
 
 int printAccum()
 {
-    char buff[6];
-    sprintf(buff, "%04d", getAccum());
+    char buff[7];
+    int ac;
+    if (sc_getData(getAccum(), &ac)) return EXIT_FAILURE;
+    sprintf(buff, "%05d", ac);
     if (mt_gotoXY(79, 2)) return EXIT_FAILURE;
     if (write(STDOUT_FILENO, buff, strlen(buff)) < 0) return EXIT_FAILURE;
     return 0;
@@ -409,7 +431,7 @@ void q_free()
 int printIO()
 {
     if (mt_gotoXY(1, 24)) return EXIT_FAILURE;
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 6; ++i) {
         for (int j = 0; j < 20; ++j) {
             if (mt_gotoXY(1 + j, 24 + i)) return EXIT_FAILURE;
             if (write(STDOUT_FILENO, " ", 1) < 0) return EXIT_FAILURE;
@@ -425,57 +447,62 @@ int printIO()
 
 /* my space; DON'T TOUCH */
 
-int IOcorrect(char *str) {
-	int data = checkData(str);
-	int com = checkCom(str);
-
-	return (data & com);
+int IOcorrect(char *str)
+{
+    int data = checkData(str);
+    int com = checkCom(str);
+    return (data * com);
 }
 
-int checkData(char *str) {
-	if (strlen(str) == 1) return EXIT_FAILURE;
+int checkData(char *str)
+{
+    if (!strlen(str)) return EXIT_FAILURE;
 
-	if (str[0] == '-') {
-		if (strlen(str) > 6) return EXIT_FAILURE;
+    if (str[0] == '-') {
+        if (strlen(str) > 6) return EXIT_FAILURE;
 
-		for (int i = 1; i < strlen(str); i++) {
-			if (str[i] < '0' && str[i] > '9') return EXIT_FAILURE;
-		}
-	} else if (str[0] >= '0' && str[0] <= '9') {
-		if (strlen(str) > 5) return EXIT_FAILURE;
+        for (int i = 1; i < strlen(str); i++) {
+            if (str[i] < '0' || str[i] > '9') return EXIT_FAILURE;
+        }
+    } else {
+        if (strlen(str) > 5) return EXIT_FAILURE;
 
-		for (int i = 1; i < strlen(str); i++) {
-			if (str[i] < '0' && str[i] > '9') return EXIT_FAILURE;
-		}
-	}
+        for (int i = 0; i < strlen(str); i++) {
+            if (str[i] < '0' || str[i] > '9') return EXIT_FAILURE;
+        }
+    }
 
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
 
+int checkCom(char *str)
+{
+    if (strlen(str) > 5) return EXIT_FAILURE;
 
-int checkCom(char *str) {
-	if (strlen(str) > 5) return EXIT_FAILURE;
+    int dt = 0;
+    int k = 0;
+    for (int i = 0; i < strlen(str); i++) {
+        if (str[i] == ':') {
+            dt = i;
+            str[i] = '\0';
+            ++k;
+        }
+    }
+    if (k != 1) return EXIT_FAILURE;
+    if ((strlen(str) == 0) || (strlen(str) > 2)) return EXIT_FAILURE;
+    for (int i = 0; str[i] != '\0'; i++) {
+        if ((str[i] < '0' || str[i] > '9') &&
+            (str[i] < 'A' && str[i] > 'F'))
+            return EXIT_FAILURE;
+    }
 
-	int dt = 0;
-	for (int i = 0; i < strlen(str); i++) {
-		if (str[i] == ':') {
-			dt = i;
-			str[i] = '\0';
-			break;
-		}
-	}
-
-	for (int i = 0; str[i] != '\0'; i++) {
-		if (strlen(str) == 1 || strlen(str) > 2) return EXIT_FAILURE;
-
-		if (str[i] < '0' && str[i] > '9') return EXIT_FAILURE;
-	}
-
-	for (int i = dt + 1; str[i] != '\0'; i++) {
-		if (strlen(str + dt + 1) == 1 || strlen(str + dt + 1) > 2) return EXIT_FAILURE;
-
-		if (str[i] < '0' && str[i] > '9') return EXIT_FAILURE;
-	}
+    if ((strlen(str + dt + 1) == 0) || (strlen(str + dt + 1) > 2)) return EXIT_FAILURE;
+    for (int i = dt + 1; str[i] != '\0'; i++) {
+        if ((str[i] < '0' || str[i] > '9') &&
+            (str[i] < 'A' || str[i] > 'F'))
+            return EXIT_FAILURE;
+    }
+    str[dt] = ':';
 
     return EXIT_SUCCESS;
 }
@@ -491,9 +518,46 @@ int printOperation()
     char o[6];
     sprintf(o, "%02X:%02X", a, b);
 
-    if (mt_gotoXY(77, 8)) return EXIT_FAILURE;
+    if (mt_gotoXY(79, 8)) return EXIT_FAILURE;
     if (write(STDOUT_FILENO, o, strlen(o)) < 0) return EXIT_FAILURE;
 
+    return EXIT_SUCCESS;
+}
+
+int changeAccum()
+{
+    int new_accumulator;
+    if (readInt(10, &new_accumulator)) {
+        qIO[0][15] = 'a';
+        return EXIT_FAILURE;
+    }
+    if (isData(new_accumulator) == 0) {
+        char err[] = "Err_a";
+        for (int i = 0; i < 5; ++i) {
+            qIO[0][i] = err[i];
+        }
+        return EXIT_FAILURE;
+    }
+    if (setAccum(new_accumulator)) exit(11);
+    return EXIT_SUCCESS;
+}
+
+int changeCounter()
+{
+    int new_counter;
+    if (readInt(10, &new_counter)) {
+        qIO[0][15] = 'i';
+        return EXIT_FAILURE;
+    }
+    if (isData(new_counter) == 0) {
+        char err[] = "Err_i";
+        for (int i = 0;  i < 5; ++i) {
+            qIO[0][i] = err[i];
+        }
+        return EXIT_FAILURE;
+    }
+    if (sc_getData(new_counter, &new_counter)) return EXIT_FAILURE;
+    if (setCounter(new_counter)) exit(11);
     return EXIT_SUCCESS;
 }
 

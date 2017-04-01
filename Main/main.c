@@ -2,6 +2,10 @@
 
 int main()
 {
+    if (init_data()) {
+        fprintf(stderr, "init_data\n");
+        return EXIT_FAILURE;
+    }
     if (box_print()) {
         fprintf(stderr, "box_print\n");
         return EXIT_FAILURE;
@@ -11,15 +15,12 @@ int main()
         fprintf(stderr, "memory_print\n");
         return EXIT_FAILURE;
     };
-    if (init_data()) {
-        fprintf(stderr, "init_data\n");
-        return EXIT_FAILURE;
-    }
     char FileMemory[16] = "MemData";
 
     KEYS key = no_key;
     move(no_key);
     while (key != key_esc) {
+        mt_gotoXY(1, 29);
         rk_readkey(&key);
         switch (key) {
             case (key_s) : {
@@ -50,11 +51,35 @@ int main()
                 break;
             }
             case (key_f5) : {
-                //
+                mt_gotoXY(1, 29);
+                rk_mytermregime(1, 0, 0, 1, 1);
+                mt_setfgcolor(clr_blue);
+
+                changeAccum();
+                mt_setfgcolor(clr_default);
+                rk_mytermregime(0, 0, 1, 0, 1);
+                if (printIO()) {
+                    mt_clscr();
+                    fprintf(stderr, "Bad request bu print queue\n");
+                    return EXIT_FAILURE;
+                }
+                move((no_key));
                 break;
             }
             case (key_f6) : {
-                //
+                mt_gotoXY(1, 29);
+                rk_mytermregime(1, 0, 0, 1, 1);
+                mt_setfgcolor(clr_blue);
+
+                changeCounter();
+                mt_setfgcolor(clr_default);
+                rk_mytermregime(0, 0, 1, 0, 1);
+                if (printIO()) {
+                    mt_clscr();
+                    fprintf(stderr, "Bad request bu print queue\n");
+                    return EXIT_FAILURE;
+                }
+                move((no_key));
                 break;
             }
             case (key_enter) : {
@@ -64,23 +89,14 @@ int main()
                 rk_mytermregime(1, 0, 0, 1, 1);
                 mt_setfgcolor(clr_blue);
 
-                if (inp()) {
-                    rk_mytermregime(0, 0, 1, 0, 1);
-                    mt_setfgcolor(clr_default);
-                    if (q_add("ERROR READ")) {
-                        mt_clscr();
-                        fprintf(stderr, "Bal request by queue\n");
-                        return EXIT_FAILURE;
-                    };
-                    if (printIO()) {
-                        mt_clscr();
-                        fprintf(stderr, "Bad request bu print queue\n");
-                        return EXIT_FAILURE;
-                    };
-                    break;
-                }
+                inp();
                 mt_setfgcolor(clr_default);
                 rk_mytermregime(0, 0, 1, 0, 1);
+                if (printIO()) {
+                    mt_clscr();
+                    fprintf(stderr, "Bad request bu print queue\n");
+                    return EXIT_FAILURE;
+                }
                 move((no_key));
                 break;
             }
@@ -93,5 +109,6 @@ int main()
 
     q_free();
     rk_mytermstore();
+    mt_clscr();
     return 0;
 }

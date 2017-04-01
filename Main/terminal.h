@@ -44,6 +44,9 @@ int printIO();
 
 int printOperation();
 
+int changeAccum();
+
+int changeCounter();
 
 /* my space; DON'T TOUCH */
 

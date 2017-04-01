@@ -42,5 +42,6 @@ int getAccum();
 int IncCount();
 int getCount();
 int zeroCount();
+int setCounter(int v);
 
 #endif // simplcomp_h
