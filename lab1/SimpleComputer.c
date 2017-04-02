@@ -153,8 +153,11 @@ int getAccum()
 
 int IncCount()
 {
-    if (counter == 99)
+    if (counter == 99) {
+        zeroCount();
         return EXIT_FAILURE;
+    }
+
     ++counter;
     return EXIT_SUCCESS;
 }

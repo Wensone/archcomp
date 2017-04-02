@@ -201,6 +201,16 @@ int memory_print(int cur, enum COLORS_TERM fg, enum COLORS_TERM bg)
 
 int init_data()
 {
+
+    nval.it_interval.tv_sec = 0;
+    nval.it_interval.tv_usec = 80000;
+    nval.it_value.tv_sec = 0;
+    nval.it_value.tv_usec = 80000;
+
+    signal(SIGUSR1, sigReset);
+    signal(SIGALRM, SIG_IGN);
+    setitimer(ITIMER_REAL, &nval, NULL);
+
     int fd = open("../lab3/BIG_CHARS", O_RDONLY);
     if (fd == -1) {
         if (mt_clscr()) return EXIT_FAILURE;
@@ -561,14 +571,18 @@ int changeCounter()
 
 void sigGo(int signo)
 {
+    memory_print(counter, clr_green, clr_black);
     if (IncCount()) {
         sc_regSet(FLAG_T, 1);
+        signal(SIGALRM, SIG_IGN);
+        memory_print(counter, clr_green, clr_black);
         return;
     }
     int t;
-    memory_print(counter, clr_green, clr_black);
     sc_regGet(FLAG_T, &t);
-    if (!t) alarm(1);
+    if (t) {
+        signal(SIGALRM, SIG_IGN);
+    }
 }
 
 void sigReset(int signo)
@@ -577,7 +591,6 @@ void sigReset(int signo)
     init_data();
     box_print();
     memory_print(0, clr_brown, clr_red);
-    xy.x = xy.y = 0;
 }
 
 /* my space; DON'T TOUCH */

@@ -16,12 +16,10 @@ int main()
         return EXIT_FAILURE;
     };
     char FileMemory[16] = "MemData";
-    signal(SIGUSR1, sigReset);
-    signal(SIGALRM, sigGo);
 
     KEYS key = no_key;
     move(no_key);
-    while (key != key_esc) {
+    while (1) {
         mt_gotoXY(1, 29);
         rk_readkey(&key);
         switch (key) {
@@ -36,13 +34,21 @@ int main()
                 break;
             }
             case (key_r) : {
-                //
+                sc_regSet(FLAG_T, 0);
+                signal(SIGALRM, sigGo);
+                alarm(0);
+                setitimer(ITIMER_REAL, &nval, NULL);
+//                raise(SIGALRM);
                 break;
             }
             case (keyt) : {
+                sc_regSet(FLAG_T, 1);
+                signal(SIGALRM, sigGo);
+                raise(SIGALRM);
                 break;
             }
             case (key_i) : {
+                sc_regSet(FLAG_T, 1);
                 raise(SIGUSR1);
                 break;
             }
@@ -101,10 +107,13 @@ int main()
                 break;
             }
         }
+        if (key_esc == key) break;
     }
 
     q_free();
-    rk_mytermstore();
     mt_clscr();
+    if (rk_mytermstore()) {
+        fprintf(stderr, "Cannot restore\n");
+    };
     return 0;
 }

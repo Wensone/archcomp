@@ -4,7 +4,7 @@ int main()
 {
     struct termios s;
     tcgetattr(STDIN_FILENO,  &s);
-    if (ERROR == rk_mytermsave()) {
+    if (rk_mytermsave()) {
         fprintf(stderr, "Save\n");
         tcsetattr(STDIN_FILENO, TCSANOW, &s);
         return 1;
@@ -21,7 +21,7 @@ int main()
 
 
 
-    if (ERROR == rk_mytermstore()) {
+    if (rk_mytermstore()) {
         fprintf(stderr, "Store\n");
         tcsetattr(STDIN_FILENO, TCSANOW, &s);
         return 1;

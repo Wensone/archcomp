@@ -6,7 +6,9 @@
 #include "../../lab3/head/graph.h"
 #include "../../lab4/head/rk.h"
 #include <signal.h>
+#include <sys/time.h>
 
+struct itimerval nval;
 struct coord {
     int x;
     int y;
