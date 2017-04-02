@@ -176,13 +176,13 @@ int memory_print(int cur, enum COLORS_TERM fg, enum COLORS_TERM bg)
             }
 
             if (write(STDOUT_FILENO, buf, strlen(buf)) < 0) return EXIT_FAILURE;
-            if (print_BC(data, clr_cyan, clr_black)) return EXIT_FAILURE;
 
             if (mt_setfgcolor(clr_default)) return EXIT_FAILURE;
             if (mt_setbgcolor(clr_default)) return EXIT_FAILURE;
             if (x != 65) {
                 if (write(STDOUT_FILENO, "  ", 2) < 0) return EXIT_FAILURE;
             }
+            if (print_BC(data, clr_cyan, clr_black)) return EXIT_FAILURE;
             printOperation();
         } else {
             if (write(STDOUT_FILENO, buf, strlen(buf)) < 0) return EXIT_FAILURE;
@@ -216,7 +216,7 @@ int init_data()
     xy.x = 0;
     xy.y = 0;
 
-    setCounter(0);
+    zeroCount();
     if (sc_setData(0, &accumulator)) return EXIT_FAILURE;
     if (sc_regInit()) return EXIT_FAILURE;
     if (sc_memoryInit()) return EXIT_FAILURE;
@@ -347,8 +347,8 @@ int readInt(int size, int *val)
     char *io = malloc(9 + strlen(buff));
     strcpy(io, "Write : ");
     strcat(io, buff);
-    free(io);
     if (q_add(io)) exit(11);
+    free(io);
 
     return EXIT_SUCCESS;
 }
@@ -432,7 +432,7 @@ int printIO()
 {
     if (mt_gotoXY(1, 24)) return EXIT_FAILURE;
     for (int i = 0; i < 6; ++i) {
-        for (int j = 0; j < 20; ++j) {
+        for (int j = 0; j < 50; ++j) {
             if (mt_gotoXY(1 + j, 24 + i)) return EXIT_FAILURE;
             if (write(STDOUT_FILENO, " ", 1) < 0) return EXIT_FAILURE;
         }
@@ -528,7 +528,6 @@ int changeAccum()
 {
     int new_accumulator;
     if (readInt(10, &new_accumulator)) {
-        qIO[0][15] = 'a';
         return EXIT_FAILURE;
     }
     if (isData(new_accumulator) == 0) {
@@ -546,12 +545,11 @@ int changeCounter()
 {
     int new_counter;
     if (readInt(10, &new_counter)) {
-        qIO[0][15] = 'i';
         return EXIT_FAILURE;
     }
     if (isData(new_counter) == 0) {
         char err[] = "Err_i";
-        for (int i = 0;  i < 5; ++i) {
+        for (int i = 0; i < 5; ++i) {
             qIO[0][i] = err[i];
         }
         return EXIT_FAILURE;
