@@ -1,4 +1,4 @@
-#include "terminal.h"
+#include "head/terminal.h"
 
 int box_print()
 {
@@ -557,6 +557,27 @@ int changeCounter()
     if (sc_getData(new_counter, &new_counter)) return EXIT_FAILURE;
     if (setCounter(new_counter)) exit(11);
     return EXIT_SUCCESS;
+}
+
+void sigGo(int signo)
+{
+    if (IncCount()) {
+        sc_regSet(FLAG_T, 1);
+        return;
+    }
+    int t;
+    memory_print(counter, clr_green, clr_black);
+    sc_regGet(FLAG_T, &t);
+    if (!t) alarm(1);
+}
+
+void sigReset(int signo)
+{
+    mt_clscr();
+    init_data();
+    box_print();
+    memory_print(0, clr_brown, clr_red);
+    xy.x = xy.y = 0;
 }
 
 /* my space; DON'T TOUCH */

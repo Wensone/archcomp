@@ -1,4 +1,4 @@
-#include "terminal.h"
+#include "head/terminal.h"
 
 int main()
 {
@@ -16,6 +16,8 @@ int main()
         return EXIT_FAILURE;
     };
     char FileMemory[16] = "MemData";
+    signal(SIGUSR1, sigReset);
+    signal(SIGALRM, sigGo);
 
     KEYS key = no_key;
     move(no_key);
@@ -38,16 +40,10 @@ int main()
                 break;
             }
             case (keyt) : {
-                //
                 break;
             }
             case (key_i) : {
-                mt_clscr();
-                box_print();
-                memory_print(0, clr_green, clr_magenta);
-                counter = 0;
-                sc_regInit();
-                xy.x = xy.y = 0;
+                raise(SIGUSR1);
                 break;
             }
             case (key_f5) : {
