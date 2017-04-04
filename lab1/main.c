@@ -8,6 +8,6 @@ void print(int i, int n)
 
 int main()
 {
-
+    if (sc_memoryLoad("asd")) perror("((");
     return 0;
 }

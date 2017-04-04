@@ -27,23 +27,27 @@ int sc_memoryGet(int address, int *value)
 
 int sc_memorySave(char *filename)
 {
-    FILE *file = fopen(filename, "wb");
-    if (!file) EXIT_FAILURE;
-
-    fwrite(ram, sizeof(int), SIZE, file);
-
-    fclose(file);
+    int fd = creat(filename, 0644);
+    if (fd < 0)
+        return EXIT_FAILURE;
+    if (write(fd, &accumulator, sizeof(accumulator)) < 0) return EXIT_FAILURE;
+    if (write(fd, &counter, sizeof(counter)) < 0) return EXIT_FAILURE;
+    if (write(fd, &Flags, sizeof(Flags)) < 0) return EXIT_FAILURE;
+    if (write(fd, ram, sizeof(int) * SIZE) < 0)
+        return EXIT_FAILURE;
+    close(fd);
     return EXIT_SUCCESS;
 }
 
 int sc_memoryLoad(char *filename)
 {
-    FILE *file = fopen(filename, "rb");
-    if (!file) return EXIT_FAILURE;
-
-    fread(ram, sizeof(int), SIZE, file);
-
-    fclose(file);
+    int fd = open(filename, O_RDONLY);
+    if (fd < 0) return EXIT_FAILURE;
+    if (read(fd, &accumulator, sizeof(accumulator)) < 0) return EXIT_FAILURE;
+    if (read(fd, &counter, sizeof(counter)) < 0) return EXIT_FAILURE;
+    if (read(fd, &Flags, sizeof(Flags)) < 0) return EXIT_FAILURE;
+    if (read(fd, ram, sizeof(int) * SIZE) < 0) return EXIT_FAILURE;
+    close(fd);
     return EXIT_SUCCESS;
 }
 

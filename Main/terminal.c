@@ -593,4 +593,25 @@ void sigReset(int signo)
     memory_print(0, clr_brown, clr_red);
 }
 
+char *readString()
+{
+    char *str = NULL;
+    str = calloc(32, sizeof(char));
+    if (!str) return NULL;
+
+    for (int i = 0; i < 31 ; ++i) {
+        if (read(STDIN_FILENO, (str + i), sizeof(char)) < 0) return NULL;
+        if ((*(str + i)) == '\n') {
+            *(str + i) = '\0';
+            break;
+        }
+    }
+    //check incorrect
+    if (strlen(str) == 0) {
+        free(str);
+        return NULL;
+    }
+    return str;
+}
+
 /* my space; DON'T TOUCH */

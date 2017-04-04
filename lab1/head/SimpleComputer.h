@@ -9,6 +9,8 @@
 #include <memory.h>
 #include <math.h>
 #include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #define SIZE 100
 /*ETM0P*/

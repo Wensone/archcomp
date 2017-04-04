@@ -9,7 +9,7 @@
 #include <sys/time.h>
 
 struct itimerval nval;
-struct coord {
+struct {
     int x;
     int y;
 } xy;
@@ -64,5 +64,7 @@ int checkCom(char *);
 void sigGo(int signo);
 
 void  sigReset(int signo);
+
+char *readString();
 
 #endif //ARCH_TERMINAL_H

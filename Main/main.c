@@ -15,7 +15,6 @@ int main()
         fprintf(stderr, "memory_print\n");
         return EXIT_FAILURE;
     };
-    char FileMemory[16] = "MemData";
 
     KEYS key = no_key;
     move(no_key);
@@ -24,13 +23,74 @@ int main()
         rk_readkey(&key);
         switch (key) {
             case (key_s) : {
-//              read(STDIN_FILENO, FileMemory, 16);
-                sc_memorySave(FileMemory);
+                mt_gotoXY(1, 29);
+                rk_mytermregime(1, 0, 0, 1, 1);
+                mt_setfgcolor(clr_blue);
+
+                char *name = readString();
+                if (!name) {
+                    q_add("incorrect name file");
+                    if (printIO()) {
+                        mt_clscr();
+                        fprintf(stderr, "Bad request bu print queue\n");
+                        return EXIT_FAILURE;
+                    }
+                    move((no_key));
+                    break;
+                }
+                mt_setfgcolor(clr_default);
+                rk_mytermregime(0, 0, 1, 0, 1);
+
+                char buff[20 + strlen(name)];
+                sprintf(buff, "Name file(s) : %s", name);
+                q_add(buff);
+                if (printIO()) {
+                    mt_clscr();
+                    fprintf(stderr, "Bad request bu print queue\n");
+                    return EXIT_FAILURE;
+                }
+                if (sc_memorySave(name)) {
+                    sprintf(buff, "Cannot save : %s", name);
+                    q_add(buff);
+                };
+                move((no_key));
+                free(name);
                 break;
             }
             case (key_l) : {
-                //
-                sc_memoryLoad(FileMemory);
+                mt_gotoXY(1, 29);
+                rk_mytermregime(1, 0, 0, 1, 1);
+                mt_setfgcolor(clr_blue);
+
+                char *name = readString();
+                if (!name) {
+                    q_add("incorrect name file");
+                    if (printIO()) {
+                        mt_clscr();
+                        fprintf(stderr, "Bad request bu print queue\n");
+                        return EXIT_FAILURE;
+                    }
+                    move((no_key));
+                    break;
+                }
+                mt_setfgcolor(clr_default);
+                rk_mytermregime(0, 0, 1, 0, 1);
+
+                char buff[32 + strlen(name)];
+                sprintf(buff, "Name file(l) : %s", name);
+                q_add(buff);
+                if (printIO()) {
+                    mt_clscr();
+                    fprintf(stderr, "Bad request bu print queue\n");
+                    return EXIT_FAILURE;
+                }
+                if (sc_memoryLoad(name)) {
+                    sprintf(buff, "File no exist : %s", name);
+                    q_add(buff);
+                };
+                move((no_key));
+                free(name);
+
                 break;
             }
             case (key_r) : {
@@ -107,9 +167,9 @@ int main()
                 break;
             }
         }
+        printIO();
         if (key_esc == key) break;
     }
-
     q_free();
     mt_clscr();
     if (rk_mytermstore()) {
