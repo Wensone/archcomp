@@ -591,6 +591,7 @@ void sigReset(int signo)
     init_data();
     box_print();
     memory_print(0, clr_brown, clr_red);
+    q_free();
 }
 
 char *readString()
