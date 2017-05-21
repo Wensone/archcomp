@@ -21,7 +21,7 @@ int pars_line(char *str, int *addr, int *value);
 
 void print_error(char *line, int line_cnt, int err);
 
-int test_argv(char *argv[]);
+int test_argv_(char *argv[]);
 
 int main(int argc, char *argv[]);
 

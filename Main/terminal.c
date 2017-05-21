@@ -602,15 +602,15 @@ void CU(int signo)
     } else {
         switch (command) {
             case 0x10: /* READ */
-                if (c_read(operand)) { sc_regSet(FLAG_T, 1); }
+                if (READ(operand)) { sc_regSet(FLAG_T, 1); }
                 break;
 
             case 0x11: /* WRITE */
-                if ( c_write(operand)) { sc_regSet(FLAG_T, 1); }
+                if (WRITE(operand)) { sc_regSet(FLAG_T, 1); }
                 break;
 
             case 0x20: /* LOAD */
-                if (c_load(operand)) { sc_regSet(FLAG_T, 1); }
+                if (LOAD(operand)) { sc_regSet(FLAG_T, 1); }
                 break;
 
             case 0x21: /* STORE */

@@ -136,7 +136,7 @@ void print_error(char *line, int line_cnt, int err)
     fprintf(stderr, "%s", line);
 }
 
-int test_argv(char *argv[])
+int test_argv_(char *argv[])
 {
     char *ptr1, *ptr2;
 
@@ -161,7 +161,7 @@ int asembler(int argc, char *argv[])
         perror("Incorrect arguments!\n");
         exit(1);
     }
-    if (test_argv(argv) != 0) {
+    if (test_argv_(argv) != 0) {
         perror("Incorrect arguments!\n");
         exit(1);
     }
