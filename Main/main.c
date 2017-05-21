@@ -1,9 +1,8 @@
 #include "head/terminal.h"
-#include "head/commands.h"
 
 int main()
 {
-    /*if (init_data()) {
+    if (init_data()) {
         fprintf(stderr, "init_data\n");
         return EXIT_FAILURE;
     }
@@ -96,7 +95,7 @@ int main()
             }
             case (key_r) : {
                 sc_regSet(FLAG_T, 0);
-                signal(SIGALRM, sigGo);
+                signal(SIGALRM, CU);
                 alarm(0);
                 setitimer(ITIMER_REAL, &nval, NULL);
 //                raise(SIGALRM);
@@ -104,7 +103,7 @@ int main()
             }
             case (keyt) : {
                 sc_regSet(FLAG_T, 1);
-                signal(SIGALRM, sigGo);
+                signal(SIGALRM, CU);
                 raise(SIGALRM);
                 break;
             }
@@ -175,12 +174,6 @@ int main()
     mt_clscr();
     if (rk_mytermstore()) {
         fprintf(stderr, "Cannot restore\n");
-    };*/
-
-    int a[50];
-    for (int i = 0; i < 50; ++i) {
-        = t_com[i] % 50;
-        printf("%d,\n", t_com[i]);
-    }
+    };
     return 0;
 }

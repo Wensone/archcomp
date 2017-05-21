@@ -61,7 +61,9 @@ int checkCom(char *);
 
 /* my space; DON'T TOUCH */
 
-void sigGo(int signo);
+void CU(int signo);
+
+int ALU(int operand, int value);
 
 void  sigReset(int signo);
 

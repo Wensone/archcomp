@@ -1,10 +1,6 @@
 #ifndef ARCH_COMMANDS_H
 #define ARCH_COMMANDS_H
 
-int ALU(int command, int operand);
-
-void CU();
-
 int c_read(int v);
 
 int c_write(int v);
@@ -13,7 +9,7 @@ int c_load(int v);
 
 int STORE(int v);
 
-int ADD(int v);
+int cADD(int v);
 
 int SUB(int v);
 

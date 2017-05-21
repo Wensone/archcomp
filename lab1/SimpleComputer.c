@@ -145,7 +145,6 @@ int isData(int c)
 
 int setAccum(int v)
 {
-    if (!isData(v)) return EXIT_FAILURE;
     accumulator = v;
     return EXIT_SUCCESS;
 }
