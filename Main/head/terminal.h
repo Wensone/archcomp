@@ -63,10 +63,10 @@ int checkCom(char *);
 
 void CU(int signo);
 
+int ALU(int operand, int value);
+
 void  sigReset(int signo);
 
 char *readString();
-
-int ALU(int command, int value);
 
 #endif //ARCH_TERMINAL_H
