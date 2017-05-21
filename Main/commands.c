@@ -1,120 +1,445 @@
 #include "head/commands.h"
+#include "../lab1/head/SimpleComputer.h"
+#include "head/terminal.h"
 
-int ALU(int command, int operand)
-{
-    int tmp;
+/*
+    м - выход за границы
+    0 - деление на 0
+    п - переполнение
+*/
 
-    switch (command) {
-        case 0x30: /* ADD */
-            accumulator += sc_memory[operand];
-            break;
-
-        case 0x31: /* SUB */
-            if (((sc_memory[operand] >> 14) & 1) == 1)
-                tmp = sc_memory[operand] | (~0x7FFF);
-            else
-                tmp = sc_memory[operand];
-            accumulator -= tmp;
-            if ((accumulator > ((int)(~0x7FFF))) && (accumulator <= 0x7FFF)) {
-                accumulator &= 0x7FFF;
-            }
-            break;
-
-        case 0x33: /* MUL */
-            accumulator *= sc_memory[operand];
-            break;
-
-        case 0x32: /* DIV */
-            if (sc_memory[operand] != 0)
-                accumulator /= sc_memory[operand];
-            else {
-                sc_regSet(FLAG_DIVISION, 1);
-                return -1;
-            }
-            break;
+/* Ввод\вывод */
+int WRITE(int v) {
+    int val;
+    if (sc_memoryGet(v, &val)) {
+        return EXIT_FAILURE;
     }
-    if ((accumulator & 1) == 0)
-        sc_regSet(FLAG_ODD, 0);
-    else
-        sc_regSet(FLAG_ODD, 1);
-    if ((accumulator > 0x7FFF) || (accumulator < 0)) {
-        accumulator &= 0x7FFF;
-        sc_regSet(FLAG_OVERFLOW, 1);
+    if (isData(val)) {
+        return EXIT_FAILURE;
     }
+    
+    sc_getData(val, &val);
+    char str[8];
+    sprintf(str, "%d", val);
+    q_add(str);
+    printIO();
+    
+    return EXIT_SUCCESS;
+}
+
+int READ(int v) {
+    int val;
+    mt_gotoXY(1, 29);
+    
+    if (readInt(8, &val)) {
+        return EXIT_FAILURE;
+    }
+    
+    sc_setData(val, &val);
+    sc_memorySet(v, val);
+    
+    return EXIT_SUCCESS;
+}
+
+/* Операции загрузки\выгрузки в аккумулятор */
+int LOAD(int v) {
+    if (sc_memoryGet(v, &accumulator))
+        return EXIT_FAILURE;
+    
+    return EXIT_SUCCESS;
+}
+
+int STORE(int v) {
+    if (sc_memorySet(v, getAccum())) {
+        return EXIT_FAILURE;
+    }
+    
+    return EXIT_SUCCESS;
+}
+
+/* Арифметика */
+int cADD(int v) {
+    int val;
+    
+    if (sc_memoryGet(v, &val)) {
+        return EXIT_FAILURE;
+    }
+    if (isData(getAccum())) {
+    
+    }
+    
+    int tmp_get_acc;
+    sc_getData(getAccum(), &tmp_get_acc);
+    val = val + tmp_get_acc;
+    
+    return EXIT_SUCCESS;
+}
+
+int SUB(int v) {
+    int val;
+    
+    if (sc_memoryGet(v, &val)) {
+        return EXIT_FAILURE;
+    }
+    if (isData(getAccum())) {
+    
+    }
+    
+    int tmp_get_acc;
+    sc_getData(getAccum(), &tmp_get_acc);
+    val = val - tmp_get_acc;
+}
+
+int DIVIDE(int v) {
+    int val;
+    
+    if (sc_memoryGet(v, &val)) {
+        return EXIT_FAILURE;
+    }
+    if (isData(getAccum())) {
+    
+    }
+    
+    int tmp_get_acc;
+    sc_getData(getAccum(), &tmp_get_acc);
+    val = val / tmp_get_acc;
+}
+
+int MUL(int v) {
+    int val;
+    
+    if (sc_memoryGet(v, &val)) {
+        return EXIT_FAILURE;
+    }
+    if (isData(getAccum())) {
+        return EXIT_FAILURE;
+    }
+    
+    int tmp_get_acc;
+    sc_getData(getAccum(), &tmp_get_acc);
+    val = val * tmp_get_acc;
+    setAccum(val);
+    
+    return EXIT_SUCCESS;
+}
+
+/* ЦУ */
+int JUMP(int v) {
+    if (v < 0 || v >= SIZE) {
+        return EXIT_FAILURE;
+    }
+    
+    counter = (unsigned) v;
+    
+    return EXIT_SUCCESS;
+}
+
+int JNEG(int v) {
+    if (v < 0 || v >= SIZE) {
+        return EXIT_FAILURE;
+    }
+    if (isData(getAccum())) {
+        return EXIT_FAILURE;
+    }
+    
+    int tmp_get_acc;
+    sc_getData(getAccum(), &tmp_get_acc);
+    
+    if (tmp_get_acc < 0)
+        counter = (unsigned) v;
+    
+    return EXIT_SUCCESS;
+}
+
+int JZ(int v) {
+    if (v < 0 || v >= SIZE) {
+        return EXIT_FAILURE;
+    }
+    if (isData(getAccum())) {
+        return EXIT_FAILURE;
+    }
+    
+    int tmp_get_acc;
+    sc_getData(getAccum(), &tmp_get_acc);
+    
+    if (tmp_get_acc == 0)
+        counter = (unsigned) v;
+    
+    return EXIT_SUCCESS;
+}
+
+int HALT(int v) {
+    char str[8];
+    sprintf(str, "%d", v);
+    q_add(str);
+    
+    sc_regSet(FLAG_T, 1);
+    
+    return EXIT_SUCCESS;
+}
+
+/* УЗЕРС */
+int NOT(int v) {
+    if (v < 0 || v >= SIZE) {
+        return EXIT_FAILURE;
+    }
+    if (isData(getAccum())) {
+        return EXIT_SUCCESS;
+    }
+    
+    int tmp_get_acc;
+    sc_getData(getAccum(), &tmp_get_acc);
+    tmp_get_acc = ~tmp_get_acc;
+    sc_memorySet(v, tmp_get_acc);
+    
+    return EXIT_SUCCESS;
+}
+
+int AND(int v) {
+    if (v < 0 || v >= SIZE) {
+        return EXIT_FAILURE;
+    }
+    if (isData(getAccum())) {
+        return EXIT_SUCCESS;
+    }
+    
+    int tmp_get_acc;
+    sc_getData(getAccum(), &tmp_get_acc);
+    int tmp_get_dat;
+    sc_memoryGet(v, &tmp_get_dat);
+    
+    if (sc_getData(tmp_get_dat, &tmp_get_dat)) {
+        return EXIT_FAILURE;
+    }
+    
+    
+    tmp_get_acc = tmp_get_acc & tmp_get_dat;
+    
+    if (sc_setData(tmp_get_acc, &tmp_get_acc)) {
+        return EXIT_FAILURE;
+    }
+    
+    setAccum(tmp_get_acc);
+    
+    return EXIT_SUCCESS;
+}
+
+int OR(int v) {
+    if (v < 0 || v >= SIZE) {
+        return EXIT_FAILURE;
+    }
+    if (isData(getAccum())) {
+        return EXIT_SUCCESS;
+    }
+    
+    int tmp_get_acc;
+    sc_getData(getAccum(), &tmp_get_acc);
+    int tmp_get_dat;
+    sc_memoryGet(v, &tmp_get_dat);
+    
+    if (sc_getData(tmp_get_dat, &tmp_get_dat)) {
+        return EXIT_FAILURE;
+    }
+    
+    
+    tmp_get_acc = tmp_get_acc | tmp_get_dat;
+    
+    if (sc_setData(tmp_get_acc, &tmp_get_acc)) {
+        return EXIT_FAILURE;
+    }
+    
+    setAccum(tmp_get_acc);
+    
+    return EXIT_SUCCESS;
+}
+
+int XOR(int v) {
+    if (v < 0 || v >= SIZE) {
+        return EXIT_FAILURE;
+    }
+    if (isData(getAccum())) {
+        return EXIT_SUCCESS;
+    }
+    
+    int tmp_get_acc;
+    sc_getData(getAccum(), &tmp_get_acc);
+    int tmp_get_dat;
+    sc_memoryGet(v, &tmp_get_dat);
+    
+    if (sc_getData(tmp_get_dat, &tmp_get_dat)) {
+        return EXIT_FAILURE;
+    }
+    
+    
+    tmp_get_acc = tmp_get_acc ^ tmp_get_dat;
+    
+    if (sc_setData(tmp_get_acc, &tmp_get_acc)) {
+        return EXIT_FAILURE;
+    }
+    
+    setAccum(tmp_get_acc);
+    
+    return EXIT_SUCCESS;
+}
+
+int JNS(int v) {
+    if (v < 0 || v >= SIZE) {
+        return EXIT_FAILURE;
+    }
+    if (isData(getAccum())) {
+        return EXIT_FAILURE;
+    }
+    
+    int tmp_get_acc;
+    sc_getData(getAccum(), &tmp_get_acc);
+    
+    if (tmp_get_acc > 0)
+        counter = (unsigned) v;
+    
+    return EXIT_SUCCESS;
+}
+
+int JC(int v) {
+    if (v < 0 || v >= SIZE) {
+        return EXIT_FAILURE;
+    }
+    
+    int tmp_get_flg;
+    if (sc_regGet(FLAG_P, &tmp_get_flg)) {
+        return EXIT_FAILURE;
+    }
+    if (tmp_get_flg)
+        counter = (unsigned) v;
     else
-        sc_regSet(FLAG_OVERFLOW, 0);
-    sc_regSet(FLAG_ODD, accumulator & 1);
+        return EXIT_FAILURE;
+    
+    return EXIT_SUCCESS;
+}
+
+int JNC(int v) {
+    if (v < 0 || v >= SIZE) {
+        return EXIT_FAILURE;
+    }
+    
+    int tmp_get_flg;
+    if (sc_regGet(FLAG_P, &tmp_get_flg)) {
+        return EXIT_FAILURE;
+    }
+    if (!tmp_get_flg)
+        counter = (unsigned) v;
+    else
+        return EXIT_FAILURE;
+    
+    return EXIT_SUCCESS;
+}
+
+int JP(int v) {
+    if (v < 0 || v >= SIZE) {
+        return EXIT_FAILURE;
+    }
+    if (isData(getAccum())) {
+        return EXIT_SUCCESS;
+    }
+    
+    int tmp_get_acc;
+    sc_getData(getAccum(), &tmp_get_acc);
+    if (tmp_get_acc % 2 == 0)
+        counter = (unsigned) v;
+    else
+        return EXIT_FAILURE;
+    
+    return EXIT_SUCCESS;
+}
+
+int JNP(int v) {
+    if (v < 0 || v >= SIZE) {
+        return EXIT_FAILURE;
+    }
+    if (isData(getAccum())) {
+        return EXIT_SUCCESS;
+    }
+    
+    int tmp_get_acc;
+    sc_getData(getAccum(), &tmp_get_acc);
+    if (tmp_get_acc % 2 == 1)
+        counter = (unsigned) v;
+    else
+        return EXIT_FAILURE;
+    
+    return EXIT_SUCCESS;
+}
+
+int CHL(int v) {
+    if (v < 0 || v >= SIZE) {
+        return EXIT_FAILURE;
+    }
+    
+    int tmp_get_dat;
+    sc_memoryGet(v, &tmp_get_dat);
+    
+    if (sc_getData(tmp_get_dat, &tmp_get_dat)) {
+        return EXIT_FAILURE;
+    }
+    
+    tmp_get_dat <<= 1;
+    
+    if (sc_setData(tmp_get_dat, &tmp_get_dat)) {
+        return EXIT_FAILURE;
+    }
+    
+    setAccum(tmp_get_dat);
+    
+    return EXIT_SUCCESS;
+}
+
+int SHR(int v) {
+    if (v < 0 || v >= SIZE) {
+        return EXIT_FAILURE;
+    }
+    
+    int tmp_get_dat;
+    sc_memoryGet(v, &tmp_get_dat);
+    
+    if (sc_getData(tmp_get_dat, &tmp_get_dat)) {
+        return EXIT_FAILURE;
+    }
+    
+    tmp_get_dat >>= 1;
+    
+    if (sc_setData(tmp_get_dat, &tmp_get_dat)) {
+        return EXIT_FAILURE;
+    }
+    
+    setAccum(tmp_get_dat);
+    
+    return EXIT_SUCCESS;
+}
+
+// ЦИКЛИЧЕСКОЕ дерьмо
+int RCL(int v) {
     return 0;
 }
 
-void CU()
-{
-    int command, operand;
-    int flag, read_suc;
-
-    if (inst_counter >= MEMSIZE) {
-        sc_regSet(FLAG_OUTMEM, 1);
-        sc_regSet(FLAG_INTERRUPT, 1);
-        return;
-    }
-    if (sc_commandDecode(sc_memory[inst_counter], &command, &operand) != 0) {
-        sc_regSet(FLAG_COMMAND, 1);
-        sc_regSet(FLAG_INTERRUPT, 1);
-        return;
-    }
-    if ((operand < 0) && (operand >= MEMSIZE)) {
-        sc_regSet(FLAG_COMMAND, 1);
-        sc_regSet(FLAG_INTERRUPT, 1);
-        return;
-    }
-    if ((command >= 0x30) && (command <= 0x33)) {
-        if (ALU(command, operand) != 0)
-            sc_regSet(FLAG_INTERRUPT, 1);
-    }
-    else {
-        switch (command) {
-            case 0x10: /* READ */
-                do {
-                    read_suc = read_mcell(operand);
-                } while(read_suc != 0);
-                break;
-
-            case 0x11: /* WRITE */
-                write_used = 1;
-                write_val = sc_memory[operand];
-                break;
-
-            case 0x20: /* LOAD */
-                accumulator = sc_memory[operand];
-                break;
-
-            case 0x21: /* STORE */
-                sc_memory[operand] = accumulator;
-                break;
-
-            case 0x40: /* JUMP */
-                inst_counter = operand - 1;
-                break;
-
-            case 0x41: /* JNEG */
-                if (((accumulator >> 14) & 1) == 1)
-                    inst_counter = operand - 1;
-                break;
-
-            case 0x42: /* JZ */
-                if (accumulator == 0)
-                    inst_counter = operand - 1;
-                break;
-
-            case 0x43: /* HALT */
-                sc_regSet(FLAG_INTERRUPT, 1);
-                break;
-
-            case 0x59: /* JNP */
-                sc_regGet(FLAG_ODD, &flag);
-                if (flag == 1)
-                    inst_counter = operand - 1;
-                break;
-        }
-    }
+// ЦИКЛИЧЕСКОЕ дерьмо
+int RCR(int v) {
+    return 0;
 }
+
+int NEG(int v) {
+    if (v < 0 || v >= SIZE) {
+        return EXIT_FAILURE;
+    }
+    
+    int tmp_get_dat;
+    sc_memoryGet(v, &tmp_get_dat);
+    
+    if (isData(tmp_get_dat)) {
+        return EXIT_FAILURE;
+    }
+    
+    setAccum(tmp_get_dat);
+    
+    return EXIT_SUCCESS;
+}
+
+// 0 <= getAccum < 100 - address

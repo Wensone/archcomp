@@ -1,5 +1,6 @@
 #include "head/terminal.h"
 
+// Отрисовка интерфейса
 int box_print() {
 	if (mt_clscr()) return EXIT_FAILURE;
 	
@@ -52,6 +53,7 @@ int box_print() {
 	return EXIT_SUCCESS;
 }
 
+// Отрисовка биг-чар
 int print_char(char x, int a, int b, enum COLORS_TERM fg, enum COLORS_TERM bg) {
 	switch (x) {
 		case ('0'): {
@@ -143,6 +145,7 @@ int print_char(char x, int a, int b, enum COLORS_TERM fg, enum COLORS_TERM bg) {
 	return EXIT_SUCCESS;
 }
 
+// Вывод памяти
 int memory_print(int cur, enum COLORS_TERM fg, enum COLORS_TERM bg) {
 	if (printAccum()) return EXIT_FAILURE;
 	if (printCount()) return EXIT_FAILURE;
@@ -196,47 +199,48 @@ int memory_print(int cur, enum COLORS_TERM fg, enum COLORS_TERM bg) {
 	return EXIT_SUCCESS;
 }
 
+// Инициализация данных
 int init_data()
 {
-
-    nval.it_interval.tv_sec = 0;
-    nval.it_interval.tv_usec = 80000;
-    nval.it_value.tv_sec = 0;
-    nval.it_value.tv_usec = 80000;
-
-    signal(SIGUSR1, sigReset);
-    signal(SIGALRM, SIG_IGN);
-    setitimer(ITIMER_REAL, &nval, NULL);
-
-    int fd = open("../lab3/BIG_CHARS", O_RDONLY);
-    if (fd == -1) {
-        if (mt_clscr()) return EXIT_FAILURE;
-        fprintf(stderr, "Read Big_Chars\n");
-        return EXIT_FAILURE;
-    }
-    int count;
-    if (bc_bigcharread(fd, big, 19, &count)) {
-        fprintf(stderr, "Bad read BigChars\n");
-        return EXIT_FAILURE;
-    }
-    if (count != 19) exit(22);
-    xy.x = 0;
-    xy.y = 0;
-
-    zeroCount();
-    if (sc_setData(0, &accumulator)) return EXIT_FAILURE;
-    if (sc_regInit()) return EXIT_FAILURE;
-    if (sc_memoryInit()) return EXIT_FAILURE;
-
-    if (rk_mytermsave()) return EXIT_FAILURE;
-    if (rk_mytermregime(0, 0, 1, 0, 1)) return EXIT_FAILURE;
-
-    memset(qIO, 0x0, 5);
-    sc_regSet(FLAG_T, 1);
-
-    return EXIT_SUCCESS;
+	nval.it_interval.tv_sec = 0;
+	nval.it_interval.tv_usec = 80000;
+	nval.it_value.tv_sec = 0;
+	nval.it_value.tv_usec = 80000;
+	
+	signal(SIGUSR1, sigReset);
+	signal(SIGALRM, SIG_IGN);
+	setitimer(ITIMER_REAL, &nval, NULL);
+	
+	int fd = open("../lab3/BIG_CHARS", O_RDONLY);
+	if (fd == -1) {
+		if (mt_clscr()) return EXIT_FAILURE;
+		fprintf(stderr, "Read Big_Chars\n");
+		return EXIT_FAILURE;
+	}
+	int count;
+	if (bc_bigcharread(fd, big, 19, &count)) {
+		fprintf(stderr, "Bad read BigChars\n");
+		return EXIT_FAILURE;
+	}
+	if (count != 19) exit(22);
+	xy.x = 0;
+	xy.y = 0;
+	
+	zeroCount();
+	if (sc_setData(0, &accumulator)) return EXIT_FAILURE;
+	if (sc_regInit()) return EXIT_FAILURE;
+	if (sc_memoryInit()) return EXIT_FAILURE;
+	
+	if (rk_mytermsave()) return EXIT_FAILURE;
+	if (rk_mytermregime(0, 0, 1, 0, 1)) return EXIT_FAILURE;
+	
+	memset(qIO, 0x0, 5);
+	sc_regSet(FLAG_T, 1);
+	
+	return EXIT_SUCCESS;
 }
 
+// Отрисовка в поле биг-чар
 int print_BC(int symb, enum COLORS_TERM fg, enum COLORS_TERM bg) {
 	int x = 2,
 			y = 14;
@@ -261,6 +265,7 @@ int print_BC(int symb, enum COLORS_TERM fg, enum COLORS_TERM bg) {
 	return EXIT_SUCCESS;
 }
 
+// Навигация
 int move(KEYS key) {
 	switch (key) {
 		case (key_up) : {
@@ -301,6 +306,7 @@ int move(KEYS key) {
 	return EXIT_SUCCESS;
 }
 
+// Счиывание значения(инт)
 int readInt(int size, int *val) {
 	char buff[64 + size];
 	memset(buff, 0, (size_t) (64 + size));
@@ -357,6 +363,7 @@ int readInt(int size, int *val) {
 	return EXIT_SUCCESS;
 }
 
+// Обработка считывания (инт) значения
 int inp() {
 	int val;
 	if (readInt(20, &val)) {
@@ -367,6 +374,7 @@ int inp() {
 	
 }
 
+// Печать аккумулятора
 int printAccum() {
 	char buff[7];
 	int ac;
@@ -377,6 +385,7 @@ int printAccum() {
 	return 0;
 }
 
+// Печать Счетчика
 int printCount() {
 	char buff[6];
 	sprintf(buff, "%04d", getCount());
@@ -405,6 +414,7 @@ int printFLAGS() {
 	return EXIT_SUCCESS;
 }
 
+// Очередь (логирование ввода\вывода)
 int q_add(char *message) {
 	if (!message)
 		return EXIT_FAILURE;
@@ -421,11 +431,13 @@ int q_add(char *message) {
 	return EXIT_SUCCESS;
 }
 
+// Очистка очереди
 void q_free() {
 	for (int i = 0; i < 5; ++i)
 		if (*(qIO + i)) free(*(qIO + i));
 }
 
+// Вывод (ввод\вывод)
 int printIO() {
 	if (mt_gotoXY(1, 24)) return EXIT_FAILURE;
 	for (int i = 0; i < 6; ++i) {
@@ -444,6 +456,7 @@ int printIO() {
 
 /* my space; DON'T TOUCH */
 
+// Проверка корректности ввода
 int IOcorrect(char *str) {
 	int data = checkData(str);
 	int com = checkCom(str);
@@ -501,6 +514,7 @@ int checkCom(char *str) {
 	return EXIT_SUCCESS;
 }
 
+// Вывод операции
 int printOperation() {
 	int operation = -1;
 	if (sc_memoryGet(xy.x + xy.y * 10, &operation)) return EXIT_FAILURE;
@@ -517,6 +531,7 @@ int printOperation() {
 	return EXIT_SUCCESS;
 }
 
+// Изменение аккумулятора
 int changeAccum() {
 	int new_accumulator;
 	if (readInt(10, &new_accumulator)) {
@@ -533,6 +548,7 @@ int changeAccum() {
 	return EXIT_SUCCESS;
 }
 
+// Изменение счетчика
 int changeCounter() {
 	int new_counter;
 	if (readInt(10, &new_counter)) {
@@ -550,7 +566,8 @@ int changeCounter() {
 	return EXIT_SUCCESS;
 }
 
-void sigGo(int signo)
+// SIGALARM функция
+void CU(int signo)
 {
     memory_print(counter, clr_green, clr_black);
     if (IncCount()) {
@@ -567,36 +584,43 @@ void sigGo(int signo)
     }
 }
 
+// SIGUSR1 функция
 void sigReset(int signo)
 {
-    mt_clscr();
-    init_data();
-    box_print();
-    memory_print(0, clr_brown, clr_red);
-    q_free();
+	mt_clscr();
+	init_data();
+	box_print();
+	memory_print(0, clr_brown, clr_red);
+	q_free();
 }
 
+// Считывание строки
 char *readString()
 {
-    char *str = NULL;
-    str = calloc(32, sizeof(char));
-    if (!str) return NULL;
-
-    for (int i = 0; i < 31 ; ++i) {
-        if (read(STDIN_FILENO, (str + i), sizeof(char)) < 0) return NULL;
-        if ((*(str + i)) == '\n') {
-            *(str + i) = '\0';
-            break;
-        }
-    }
-    //check incorrect
-    if (strlen(str) == 0) {
-        free(str);
-        return NULL;
-    }
-    return str;
+	char *str = NULL;
+	str = calloc(32, sizeof(char));
+	if (!str) return NULL;
+	
+	for (int i = 0; i < 31 ; ++i) {
+		if (read(STDIN_FILENO, (str + i), sizeof(char)) < 0) return NULL;
+		if ((*(str + i)) == '\n') {
+			*(str + i) = '\0';
+			break;
+		}
+	}
+	//check incorrect
+	if (strlen(str) == 0) {
+		free(str);
+		return NULL;
+	}
+	return str;
 }
 
+int ALU(int command, int value) {
+	return EXIT_SUCCESS;
+}
+
+// Корректность имени файла
 int checkFile(char *str) {
 	if (strlen(str) > 254) return EXIT_FAILURE;
 	

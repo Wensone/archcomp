@@ -61,10 +61,12 @@ int checkCom(char *);
 
 /* my space; DON'T TOUCH */
 
-void sigGo(int signo);
+void CU(int signo);
 
 void  sigReset(int signo);
 
 char *readString();
+
+int ALU(int command, int value);
 
 #endif //ARCH_TERMINAL_H

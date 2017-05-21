@@ -25,7 +25,6 @@ int Flags;
 unsigned int counter;
 int accumulator;
 
-
 int sc_memoryInit();
 int sc_memorySet(int, int);
 int sc_memoryGet(int, int*);
