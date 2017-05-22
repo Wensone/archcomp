@@ -54,6 +54,7 @@ int sc_memoryLoad(char *filename)
 int sc_regInit()
 {
     Flags = 0x0;
+    sc_regSet(FLAG_T, 1);
     return EXIT_SUCCESS;
 }
 

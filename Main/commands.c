@@ -14,13 +14,13 @@ int WRITE(int v) {
     if (sc_memoryGet(v, &val)) {
         return EXIT_FAILURE;
     }
-    if (isData(val)) {
+    if (!isData(val)) {
         return EXIT_FAILURE;
     }
     
     sc_getData(val, &val);
-    char str[8];
-    sprintf(str, "%d", val);
+    char str[16];
+    sprintf(str, "Out : %d", val);
     q_add(str);
     printIO();
     
@@ -30,12 +30,15 @@ int WRITE(int v) {
 int READ(int v) {
     int val;
     mt_gotoXY(1, 29);
-    
+    write(STDOUT_FILENO, "Please, enter : ", 16);
+    rk_mytermregime(1, 0, 0, 1, 1);
     if (readInt(8, &val)) {
+        sc_regSet(FLAG_P, 1);
+        rk_mytermregime(0, 0, 1, 0, 1);
         return EXIT_FAILURE;
     }
-    
-    sc_setData(val, &val);
+    rk_mytermregime(0, 0, 1, 0, 1);
+
     sc_memorySet(v, val);
     
     return EXIT_SUCCESS;
@@ -45,7 +48,6 @@ int READ(int v) {
 int LOAD(int v) {
     if (sc_memoryGet(v, &accumulator))
         return EXIT_FAILURE;
-    
     return EXIT_SUCCESS;
 }
 
@@ -64,62 +66,89 @@ int cADD(int v) {
     if (sc_memoryGet(v, &val)) {
         return EXIT_FAILURE;
     }
-    if (isData(getAccum())) {
-    
+    if (!isData(getAccum())) {
+        return EXIT_FAILURE;
+    }
+    if (sc_getData(val, &val)) {
+        return EXIT_FAILURE;
     }
     
     int tmp_get_acc;
     sc_getData(getAccum(), &tmp_get_acc);
-    val = val + tmp_get_acc;
+    val += tmp_get_acc;
+    if (sc_setData(val, &accumulator)) {
+        sc_regSet(FLAG_P, 1);
+        sc_setData(0, &accumulator);
+    }
     
     return EXIT_SUCCESS;
 }
 
 int SUB(int v) {
     int val;
-    
+
     if (sc_memoryGet(v, &val)) {
         return EXIT_FAILURE;
     }
-    if (isData(getAccum())) {
-    
-    }
-    
     int tmp_get_acc;
-    sc_getData(getAccum(), &tmp_get_acc);
-    val = val - tmp_get_acc;
+    if (sc_getData(getAccum(), &tmp_get_acc)) {
+        return EXIT_FAILURE;
+    }
+    if (sc_getData(val, &val)) {
+        return EXIT_FAILURE;
+    }
+
+    val = tmp_get_acc - val;
+    if (sc_setData(val, &accumulator)) {
+        sc_regSet(FLAG_P, 1);
+        sc_setData(0, &accumulator);
+    }
+    return EXIT_SUCCESS;
 }
 
 int DIVIDE(int v) {
     int val;
-    
+
     if (sc_memoryGet(v, &val)) {
         return EXIT_FAILURE;
     }
-    if (isData(getAccum())) {
-    
-    }
-    
     int tmp_get_acc;
-    sc_getData(getAccum(), &tmp_get_acc);
-    val = val / tmp_get_acc;
+    if (sc_getData(getAccum(), &tmp_get_acc)) {
+        return EXIT_FAILURE;
+    }
+    if (sc_getData(val, &val)) {
+        return EXIT_FAILURE;
+    }
+    if (!val) {
+        sc_regSet(FLAG_0, 1);
+        sc_regSet(FLAG_T, 1);
+        return EXIT_SUCCESS;
+    }
+
+    val = tmp_get_acc / val;
+    sc_setData(val, &accumulator);
+    return EXIT_SUCCESS;
 }
 
 int MUL(int v) {
     int val;
-    
+
     if (sc_memoryGet(v, &val)) {
         return EXIT_FAILURE;
     }
-    if (isData(getAccum())) {
+    int tmp_get_acc;
+    if (sc_getData(getAccum(), &tmp_get_acc)) {
         return EXIT_FAILURE;
     }
-    
-    int tmp_get_acc;
-    sc_getData(getAccum(), &tmp_get_acc);
-    val = val * tmp_get_acc;
-    setAccum(val);
-    
+    if (sc_getData(val, &val)) {
+        return EXIT_FAILURE;
+    }
+
+    val = tmp_get_acc * val;
+    if (sc_setData(val, &accumulator)) {
+        sc_regSet(FLAG_P, 1);
+        sc_setData(0, &accumulator);
+    }
     return EXIT_SUCCESS;
 }
 
@@ -138,15 +167,15 @@ int JNEG(int v) {
     if (v < 0 || v >= SIZE) {
         return EXIT_FAILURE;
     }
-    if (isData(getAccum())) {
+    int tmp_get_acc;
+    if (sc_getData(getAccum(), &tmp_get_acc)) {
         return EXIT_FAILURE;
     }
-    
-    int tmp_get_acc;
-    sc_getData(getAccum(), &tmp_get_acc);
-    
+
+
     if (tmp_get_acc < 0)
         counter = (unsigned) v;
+    else ++counter;
     
     return EXIT_SUCCESS;
 }
@@ -155,25 +184,26 @@ int JZ(int v) {
     if (v < 0 || v >= SIZE) {
         return EXIT_FAILURE;
     }
-    if (isData(getAccum())) {
+    int tmp_get_acc;
+    if (sc_getData(getAccum(), &tmp_get_acc)) {
         return EXIT_FAILURE;
     }
-    
-    int tmp_get_acc;
-    sc_getData(getAccum(), &tmp_get_acc);
-    
+
+
     if (tmp_get_acc == 0)
         counter = (unsigned) v;
+    else ++counter;
     
     return EXIT_SUCCESS;
 }
 
 int HALT(int v) {
-    char str[8];
-    sprintf(str, "%d", v);
+    char str[32];
+    sprintf(str, "Exit(%d)", v);
     q_add(str);
     
     sc_regSet(FLAG_T, 1);
+    printIO();
     
     return EXIT_SUCCESS;
 }

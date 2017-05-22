@@ -183,7 +183,8 @@ int memory_print(int cur, enum COLORS_TERM fg, enum COLORS_TERM bg)
             if (x != 65) {
                 if (write(STDOUT_FILENO, "  ", 2) < 0) return EXIT_FAILURE;
             }
-            if (print_BC(data, clr_cyan, clr_black)) return EXIT_FAILURE;
+            if (cur == i)
+                if (print_BC(data, clr_cyan, clr_black)) return EXIT_FAILURE;
             printOperation();
         } else {
             if (write(STDOUT_FILENO, buf, strlen(buf)) < 0) return EXIT_FAILURE;
@@ -209,7 +210,7 @@ int init_data()
     nval.it_value.tv_usec = 80000;
 
     signal(SIGUSR1, sigReset);
-    signal(SIGALRM, SIG_IGN);
+    signal(SIGALRM, CU);
     setitimer(ITIMER_REAL, &nval, NULL);
 
     int fd = open("../lab3/BIG_CHARS", O_RDONLY);
@@ -435,8 +436,10 @@ int q_add(char *message)
 
 void q_free()
 {
-    for (int i = 0; i < 5; ++i)
+    for (int i = 0; i < 5; ++i) {
         if (*(qIO + i)) free(*(qIO + i));
+        qIO[i] = NULL;
+    }
 }
 
 int printIO()
@@ -572,93 +575,95 @@ int changeCounter()
 
 void CU(int signo)
 {
+    int t;
+    sc_regGet(FLAG_T, &t);
+    if (t && signo == SIGALRM) {
+//        memory_print(counter, clr_green, clr_black);
+        return;
+    }
     int command, operand;
     int cur_mem;
+
+
 
     if (sc_memoryGet(getCount(), &cur_mem)) {
         sc_regSet(FLAG_M, 1);
         signal(SIGALRM, SIG_IGN);
         sc_regSet(FLAG_T, 1);
+        memory_print(counter, clr_green, clr_black);
         return;
     }
     if (sc_commandDecode(cur_mem, &command, &operand)) {
-        sc_regSet(FLAG_M, 1);
+        sc_regSet(FLAG_E, 1);
         signal(SIGALRM, SIG_IGN);
         sc_regSet(FLAG_T, 1);
+        memory_print(counter, clr_green, clr_black);
         return;
     }
     if ((operand < 0) && (operand >= SIZE)) {
         sc_regSet(FLAG_M, 1);
         signal(SIGALRM, SIG_IGN);
         sc_regSet(FLAG_T, 1);
+        memory_print(counter, clr_green, clr_black);
         return;
     }
-    if (((command >= 0x30) && (command <= 0x33)) || ((command >= 0x51) && (command <= 0x54)) ||
-        ((command >= 60) && (command <= 70))) {
+
+    if (((command >= 0x30) && (command <= 0x33))) {
         if (ALU(command, operand)) {
             sc_regSet(FLAG_T, 1);
             sc_regSet(FLAG_E, 1);
         }
     } else {
         switch (command) {
-            case 0x10: /* READ */
+            case 0x10: //* READ *//*
                 if (READ(operand)) { sc_regSet(FLAG_T, 1); }
                 break;
 
-            case 0x11: /* WRITE */
+            case 0x11: //* WRITE *//*
                 if (WRITE(operand)) { sc_regSet(FLAG_T, 1); }
                 break;
 
-            case 0x20: /* LOAD */
+            case 0x20: //* LOAD *//*
                 if (LOAD(operand)) { sc_regSet(FLAG_T, 1); }
                 break;
 
-            case 0x21: /* STORE */
+            case 0x21: //* STORE *//*
                 if (STORE(operand)) { sc_regSet(FLAG_T, 1); }
                 break;
 
-            case 0x40: /* JUMP */
-                if (JUMP(operand - 1)) { sc_regSet(FLAG_T, 1); }
+            case 0x40: //* JUMP *//*
+                if (JUMP(operand)) { sc_regSet(FLAG_T, 1); }
+                else --counter;
                 break;
 
-            case 0x41: /* JNEG */
-                if (JNEG(operand - 1)) { sc_regSet(FLAG_T, 1); }
+            case 0x41: //* JNEG *//*
+                if (JNEG(operand)) { sc_regSet(FLAG_T, 1); }
+                else --counter;
                 break;
 
-            case 0x42: /* JZ */
-                if (JZ(operand - 1)) { sc_regSet(FLAG_T, 1); }
+            case 0x42: //* JZ *//*
+                if (JZ(operand)) { sc_regSet(FLAG_T, 1); }
+                else --counter;
                 break;
 
-            case 0x43: /* HALT */
+            case 0x43: //* HALT *//*
                 if (HALT(operand)) { sc_regSet(FLAG_T, 1); }
                 break;
 
             case 0x55 : // JNS
-                if (JNS(operand - 1)) { sc_regSet(FLAG_T, 1); }
+                if (JNS(operand)) { sc_regSet(FLAG_T, 1); }
                 break;
             case 0x56 : // JC
-                if (JC(operand - 1)) { sc_regSet(FLAG_T, 1); }
+                if (JC(operand)) { sc_regSet(FLAG_T, 1); }
                 break;
             case 0x57: // JNC
-                if (JNC(operand - 1)) { sc_regSet(FLAG_T, 1); }
+                if (JNC(operand)) { sc_regSet(FLAG_T, 1); }
                 break;
             case 0x58 : // JP
-                if (JP(operand - 1)) { sc_regSet(FLAG_T, 1); }
+                if (JP(operand)) { sc_regSet(FLAG_T, 1); }
                 break;
             case 0x59: // JNP
-                if (JNP(operand - 1)) { sc_regSet(FLAG_T, 1); }
-                break;
-            case 0x71 :
-                if (MOVA(operand - 1)) { sc_regSet(FLAG_T, 1); }
-                break;
-            case 0x72:
-                if (MOVR(operand - 1)) { sc_regSet(FLAG_T, 1); }
-                break;
-            case 0x73:
-                if (MOVCA(operand - 1)) { sc_regSet(FLAG_T, 1); }
-                break;
-            case 0x74:
-                if (MOVCR(operand - 1)) { sc_regSet(FLAG_T, 1); }
+                if (JNP(operand)) { sc_regSet(FLAG_T, 1); }
                 break;
             default:
                 sc_regSet(FLAG_E, 1);
@@ -666,20 +671,22 @@ void CU(int signo)
                 break;
         }
     }
-
-    int t;
-    memory_print(counter, clr_green, clr_black);
-    sc_regGet(FLAG_T, &t);
-    if (t) {
-        signal(SIGALRM, SIG_IGN);
+    if (IncCount()) {
+        sc_regSet(FLAG_M, 1);
+        sc_regSet(FLAG_T, 1);
     }
+    memory_print(counter, clr_green, clr_black);
+    //sc_regGet(FLAG_T, &t);
+    //if (t) {
+    //  signal(SIGALRM, SIG_IGN);
+    // }
 }
 
 
 void sigReset(int signo)
 {
     mt_clscr();
-    //init_data();
+    init_data();
     box_print();
     memory_print(0, clr_brown, clr_red);
     q_free();
@@ -762,33 +769,6 @@ int ALU(int command, int operand)
             break;
         case 0x61:
             if (SHR(operand)) return EXIT_FAILURE;
-            break;
-        case 0x62:
-            if (RCCL(operand)) return EXIT_FAILURE;
-            break;
-        case 0x63:
-            if (RCR(operand)) return EXIT_FAILURE;
-            break;
-        case 0x64:
-            if (NEG(operand)) return EXIT_FAILURE;
-            break;
-        case 0x65:
-            if (ADDC(operand)) return EXIT_FAILURE;
-            break;
-        case 0x66:
-            if (SUBC(operand)) return EXIT_FAILURE;
-            break;
-        case 0x67:
-            if (LOGLC(operand)) return EXIT_FAILURE;
-            break;
-        case 0x68:
-            if (LOGRC(operand)) return EXIT_FAILURE;
-            break;
-        case 0x69:
-            if (RCCL(operand)) return EXIT_FAILURE;
-            break;
-        case 0x70:
-            if (RCCL(operand)) return EXIT_FAILURE;
             break;
         default:
             return EXIT_FAILURE;

@@ -44,11 +44,6 @@ int main()
                 char buff[20 + strlen(name)];
                 sprintf(buff, "Name file(s) : %s", name);
                 q_add(buff);
-                if (printIO()) {
-                    mt_clscr();
-                    fprintf(stderr, "Bad request bu print queue\n");
-                    return EXIT_FAILURE;
-                }
                 if (sc_memorySave(name)) {
                     sprintf(buff, "Cannot save : %s", name);
                     q_add(buff);
@@ -79,11 +74,6 @@ int main()
                 char buff[32 + strlen(name)];
                 sprintf(buff, "Name file(l) : %s", name);
                 q_add(buff);
-                if (printIO()) {
-                    mt_clscr();
-                    fprintf(stderr, "Bad request bu print queue\n");
-                    return EXIT_FAILURE;
-                }
                 if (sc_memoryLoad(name)) {
                     sprintf(buff, "File no exist : %s", name);
                     q_add(buff);
@@ -95,20 +85,21 @@ int main()
             }
             case (key_r) : {
                 sc_regSet(FLAG_T, 0);
-                signal(SIGALRM, CU);
-                alarm(0);
-                setitimer(ITIMER_REAL, &nval, NULL);
+                //signal(SIGALRM, CU);
+                //alarm(0);
+                //setitimer(ITIMER_REAL, &nval, NULL);
 //                raise(SIGALRM);
                 break;
             }
             case (keyt) : {
                 sc_regSet(FLAG_T, 1);
-                signal(SIGALRM, CU);
-                raise(SIGALRM);
+                //alarm(0);
+                //signal(SIGALRM, CU);
+                CU(0);
                 break;
             }
             case (key_i) : {
-                sc_regSet(FLAG_T, 1);
+//                sc_regSet(FLAG_T, 1);
                 raise(SIGUSR1);
                 break;
             }
@@ -120,11 +111,6 @@ int main()
                 changeAccum();
                 mt_setfgcolor(clr_default);
                 rk_mytermregime(0, 0, 1, 0, 1);
-                if (printIO()) {
-                    mt_clscr();
-                    fprintf(stderr, "Bad request bu print queue\n");
-                    return EXIT_FAILURE;
-                }
                 move((no_key));
                 break;
             }
@@ -136,11 +122,6 @@ int main()
                 changeCounter();
                 mt_setfgcolor(clr_default);
                 rk_mytermregime(0, 0, 1, 0, 1);
-                if (printIO()) {
-                    mt_clscr();
-                    fprintf(stderr, "Bad request bu print queue\n");
-                    return EXIT_FAILURE;
-                }
                 move((no_key));
                 break;
             }
@@ -154,20 +135,19 @@ int main()
                 inp();
                 mt_setfgcolor(clr_default);
                 rk_mytermregime(0, 0, 1, 0, 1);
-                if (printIO()) {
-                    mt_clscr();
-                    fprintf(stderr, "Bad request bu print queue\n");
-                    return EXIT_FAILURE;
-                }
+
                 move((no_key));
                 break;
             }
-            default : {
-                move(key);
-                break;
-            }
         }
-        printIO();
+        if (move(key)) {
+            q_add("You enter bad request, please clear");
+        };
+        if (printIO()) {
+            mt_clscr();
+            fprintf(stderr, "Bad request bu print queue\n");
+            return EXIT_FAILURE;
+        }
         if (key_esc == key) break;
     }
     q_free();
