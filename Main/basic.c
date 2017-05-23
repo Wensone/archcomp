@@ -1,483 +1,1152 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
 #include "head/basic.h"
 
-int val_table[26];
-int stack_addr[100];
-struct b_label labels[100];
-struct memory_t structmemory[100];
-int code_pos = 0, val_pos = 99, label_pos = 0;
+#define REM 5
+#define LET 6
+#define ERR -1
+#define REOP 18
 
+char *asProg = NULL;
+char memory[100];
+int memNumb[100];
+FILE *out = NULL;
+int numLine = 0;
+int wait = -1;
+int numWait = -1;
+long int jp;
 
-
-void saveAsm(FILE *file)
+int calculation(char *operation, int start, int end)
 {
-	int i;
+    int signs = 0;
+    int prioritySigns = 0;
+    char masSig[] = {'0', '0', '0', '0', '0'};
+    int numbSig[] = {-1, -1, -1, -1, -1};
+    int i = 0;
+    int pos = 81;
+    int posSum = 71;
+    int *chiss = malloc(sizeof(int) * 100);
+    for (i = 0; i < 100; ++i) {
+        chiss[i] = -1;
+    }
 
-    for (i = 0; i < code_pos; i++) {
-        switch (structmemory[i].command) {
-            case _READ: //READ
-                fprintf(file, "%02d READ %d\n", i, structmemory[i].operand);
-                break;
+    for (pos = 81; pos <= 100; ++pos) {
+        if (memory[pos] == '0') break;
+    }
 
-            case _WRITE: //WRITE
-                fprintf(file, "%02d WRITE %d\n", i, structmemory[i].operand);
-                break;
-
-            case _LOAD: //LOAD
-                fprintf(file, "%02d LOAD %d\n", i, structmemory[i].operand);
-                break;
-
-            case _STORE: //STORE
-                fprintf(file, "%02d STORE %d\n", i, structmemory[i].operand);
-                break;
-
-            case _ADD: //ADD
-                fprintf(file, "%02d ADD %d\n", i, structmemory[i].operand);
-                break;
-
-            case _SUB: //SUB
-                fprintf(file, "%02d SUB %d\n", i, structmemory[i].operand);
-                break;
-
-            case _DIVIDE: //DIVIDE
-                fprintf(file, "%02d DIVIDE %d\n", i, structmemory[i].operand);
-                break;
-
-            case _MUL: //MUL
-                fprintf(file, "%02d MUL %d\n", i, structmemory[i].operand);
-                break;
-
-            case _JUMP: //JUMP
-                fprintf(file, "%02d JUMP %d\n", i, structmemory[i].operand);
-                break;
-
-            case _JNEG: //JNEG
-                fprintf(file, "%02d JNEG %d\n", i, structmemory[i].operand);
-                break;
-
-            case _JZ: //JZ
-                fprintf(file, "%02d JZ %d\n", i, structmemory[i].operand);
-                break;
-
-            case _HALT: //HALT
-                fprintf(file, "%02d HALT %d\n", i, structmemory[i].operand);
-                break;
-            default:break;
+    for (i = start; i < end; ++i) {
+        if (operation[i] == '*'
+            || operation[i] == '/'
+            || operation[i] == '+'
+            || operation[i] == '-') {
+            if (operation[i] == '*' || operation[i] == '/')
+                prioritySigns++;
+            masSig[signs] = operation[i];
+            numbSig[signs] = i;
+            signs++;
         }
     }
-    int high, low;
-    for (i = val_pos+1; i < 100; i++) {
-		if (structmemory[i].command != 0) {
-			high = (structmemory[i].command >> 7) & 0x7F;
-			low = structmemory[i].command & 0x7F;
-			fprintf(file, "%02d = +%02X%02X", i, high, low);
-		}
-	}
-}
+    int numSgs = signs;
 
-int find_label(int label)
-{
-	int i;
-	
-	for (i = 0; i < label_pos; i++) {
-		if (labels[i].label == label)
-			return labels[i].pos;
-	}
-	return -1;
-}
+    while (numSgs != 0) {
 
-char *get_label_and_keyw(char *str, int *label, char *keyword)
-{
-	int cnt;
-	int i = 0;
-	
-	cnt = sscanf(str, "%d%s", label, keyword);
-	if (cnt != 2)
-		return NULL;
-	for (; (str[i] == ' ') || (str[i] == '\t'); i++);
-	for (; (str[i] != ' ') && (str[i] != '\t'); i++);
-	for (; (str[i] == ' ') || (str[i] == '\t'); i++);
-	for (; (str[i] != ' ') && (str[i] != '\t'); i++);
-	for (; (str[i] == ' ') || (str[i] == '\t'); i++);
-	return str + i;
-}
+        for (i = 0; i < signs; ++i) {
+            if (prioritySigns != 0) {
+                if (masSig[i] == '*' || masSig[i] == '/') {
+                    int pred = 0;
+                    int fol = 0;
+                    int k = 0;
+                    int op = 0;
+                    int cl = 0;
+                    for (k = start; k < numbSig[i]; ++k) {
+                        if (operation[k] == '(')
+                            op++;
+                        if (operation[k] == ')')
+                            cl++;
+                    }
+                    if (op != cl) {
+                        numSgs--;
+                        continue;
+                    }
 
-int get_keyword_code(char *str)
-{
-	if (strcmp(str, "REM") == 0)
-		return KEYW_REM;
-	else if (strcmp(str, "INPUT") == 0)
-		return KEYW_INPUT;
-	else if (strcmp(str, "OUTPUT") == 0)
-		return KEYW_OUTPUT;
-	else if (strcmp(str, "GOTO") == 0)
-		return KEYW_GOTO;
-	else if (strcmp(str, "IF") == 0)
-		return KEYW_IF;
-	else if (strcmp(str, "LET") == 0)
-		return KEYW_LET;
-	else if ((strcmp(str, "END") == 0) || (strcmp(str, "END\n") == 0))
-		return KEYW_END;
-	else
-		return -1;
-}
+                    for (k = 80; k < 100; ++k) {
+                        if (memory[k] == operation[numbSig[i] - 1])
+                            pred = k;
+                        if (memory[k] == operation[numbSig[i] + 1])
+                            fol = k;
+                    }
+                    if (operation[numbSig[i] - 1] == ')') {
+                        pred = posSum;
+                        posSum++;
+                    }
+                    if (operation[numbSig[i] + 1] == '(') {
+                        fol = posSum;
+                        posSum++;
+                    }
+                    if (operation[numbSig[i] - 1] == 'x') {
+                        for (k = numbSig[i] - 1; k > start; --k) {
+                            if (operation[k] != 'x') {
+                                int r = operation[k] - '0';
+                                r += (operation[k - 1] - '0') * 10;
+                                pred = r;
+                                break;
+                            }
+                        }
+                    }
+                    if (operation[numbSig[i] + 1] == 'x') {
+                        for (k = numbSig[i] + 1; k < end; ++k) {
+                            if (operation[k] != 'x') {
+                                int r = (operation[k] - '0') * 10;
+                                r += (operation[k + 1] - '0');
+                                fol = r;
+                                break;
+                            }
+                        }
+                    }
+                    if (operation[numbSig[i] - 1] >= '0' && operation[numbSig[i] - 1] <= '9') {
+                        int r = 0;
+                        for (k = numbSig[i] - 1; k >= start; --k) {
+                            if (operation[k] < '0' || operation[k] > '9') {
+                                break;
+                            }
+                        }
+                        for (k++; k <= end; ++k) {
+                            if (operation[k] < '0' || operation[k] > '9') {
+                                break;
+                            }
+                            r = r * 10 + (operation[k] - '0');
+                        }
+                        if (chiss[r] != -1) {
+                            pred = chiss[r];
+                        } else {
+                            for (k = 60; k < 100; ++k) {
+                                if (memory[k] == '0') break;
+                            }
+                            fprintf(out, "%c%c = +%c%c\n", (char) (k / 10) + '0',
+                                    (char) (k % 10) + '0', (char) (r / 10) + '0', (char) (r % 10) + '0');
+                            chiss[r] = k;
+                            pred = k;
+                            memory[k] = 'q';
+                        }
 
-int is_delim(char c)
-{
-	if ((c == ' ') || (c == '\t') || (c == '\0') || (c == '\n'))
-		return 0;
-	else
-		return -1;
-}
+                    }
+                    if (operation[numbSig[i] + 1] >= '0' && operation[numbSig[i] + 1] <= '9') {
+                        int r = 0;
+                        for (k = numbSig[i] + 1; k <= end; ++k) {
+                            if (operation[k] < '0' || operation[k] > '9') {
+                                break;
+                            }
+                            r = r * 10 + (operation[k] - '0');
+                        }
+                        if (chiss[r] != -1) {
+                            fol = chiss[r];
+                        } else {
+                            for (k = 60; k < 100; ++k) {
+                                if (memory[k] == '0') break;
+                            }
+                            fprintf(out, "%c%c = +%c%c\n", (char) (k / 10) + '0',
+                                    (char) (k % 10) + '0', (char) (r / 10) + '0', (char) (r % 10) + '0');
+                            chiss[r] = k;
+                            fol = k;
+                            memory[k] = 'q';
+                        }
+                    }
+                    fprintf(out, "%c%c LOAD %c%c\n", (char) (numLine / 10) + '0',
+                            (char) (numLine % 10) + '0', (char) (pred / 10) + '0', (char) (pred % 10) + '0');
+                    memory[numLine] = 'q';
+                    numLine++;
+                    if (masSig[i] == '*') {
+                        fprintf(out, "%c%c MUL %c%c\n", (char) (numLine / 10) + '0',
+                                (char) (numLine % 10) + '0', (char) (fol / 10) + '0', (char) (fol % 10) + '0');
+                        memory[numLine] = 'q';
+                        numLine++;
+                    } else {
+                        fprintf(out, "%c%c DIVIDE %c%c\n", (char) (numLine / 10) + '0',
+                                (char) (numLine % 10) + '0', (char) (fol / 10) + '0', (char) (fol % 10) + '0');
+                        memory[numLine] = 'q';
+                        numLine++;
+                    }
+                    if (operation[numbSig[i] + 1] == '(') {
+                        for (k = i + 1; k < signs; ++k) {
+                            if (operation[numbSig[k] + 2] == ')')
+                                break;
+                        }
+                        i = k;
+                    }
+                    while (masSig[i + 1] == '*' || masSig[i + 1] == '/') {
+                        i++;
+                        for (k = 80; k < 100; ++k) {
+                            if (memory[k] == operation[numbSig[i] + 1])
+                                fol = k;
+                        }
+                        if (operation[numbSig[i] + 1] == '(') {
+                            fol = posSum;
+                            posSum++;
+                        }
+                        if (operation[numbSig[i] + 1] >= '0' && operation[numbSig[i] + 1] <= '9') {
+                            int r = 0;
+                            for (k = numbSig[i] + 1; k <= end; ++k) {
+                                if (operation[k] < '0' || operation[k] > '9') {
+                                    break;
+                                }
+                                r = r * 10 + (operation[k] - '0');
+                            }
+                            if (chiss[r] != -1) {
+                                fol = chiss[r];
+                            } else {
+                                for (k = 60; k < 100; ++k) {
+                                    if (memory[k] == '0') break;
+                                }
+                                fprintf(out, "%c%c = +%c%c\n", (char) (k / 10) + '0',
+                                        (char) (k % 10) + '0', (char) (r / 10) + '0', (char) (r % 10) + '0');
+                                chiss[r] = k;
+                                fol = k;
+                                memory[k] = 'q';
+                            }
+                        }
+                        if (operation[numbSig[i] + 1] == 'x') {
+                            for (k = numbSig[i] + 1; k < end; ++k) {
+                                if (operation[k] != 'x') {
+                                    int r = (operation[k] - '0') * 10;
+                                    r += (operation[k + 1] - '0');
+                                    fol = r;
+                                    break;
+                                }
+                            }
+                        }
+                        if (masSig[i] == '*') {
+                            fprintf(out, "%c%c MUL %c%c\n", (char) (numLine / 10) + '0',
+                                    (char) (numLine % 10) + '0', (char) (fol / 10) + '0', (char) (fol % 10) + '0');
+                            memory[numLine] = 'q';
+                            numLine++;
+                        } else {
+                            fprintf(out, "%c%c DIVIDE %c%c\n", (char) (numLine / 10) + '0',
+                                    (char) (numLine % 10) + '0', (char) (fol / 10) + '0', (char) (fol % 10) + '0');
+                            memory[numLine] = 'q';
+                            numLine++;
+                        }
+                        prioritySigns--;
+                        numSgs--;
 
-char *cpy_token(char *token, char *str)
-{
-	int i;
-	
-	for (i = 0; (str[i] == ' ') || (str[i] == '\t'); i++);
-	str += i;
-	for (i = 0; is_delim(str[i]) != 0; i++) {
-		token[i] = str[i];
-	}
-	token[i] = '\0';
-	
-	return str+i;
-}
+                    }
+                    fprintf(out, "%c%c STORE %c%c\n", (char) (numLine / 10) + '0',
+                            (char) (numLine % 10) + '0', (char) (pos / 10) + '0', (char) (pos % 10) + '0');
+                    memory[numLine] = 'q';
+                    numLine++;
+                    prioritySigns--;
+                    numSgs--;
+                    pos++;
+                    if (prioritySigns == 0) {
+                        i = 0;
+                        pos = 81;
+                    }
+                }
+            } else {
+                if (masSig[i] == '+' || masSig[i] == '-') {
+                    int pred = 0;
+                    int fol = 0;
+                    int k = 0;
+                    int op = 0;
+                    int cl = 0;
+                    for (k = start; k < numbSig[i]; ++k) {
+                        if (operation[k] == '(')
+                            op++;
+                        if (operation[k] == ')')
+                            cl++;
+                    }
+                    if (op != cl) {
+                        numSgs--;
+                        continue;
+                    }
+                    //printf("%c%c%c%c--------------------\n", operation[numbSig[i] - 2], operation[numbSig[i] - 1],
+                      //     operation[numbSig[i]], operation[numbSig[i] + 1]);
 
-int srt_is_empty(char *str)
-{
-	int i;
-	
-	for (i = 0; (str[i] == ' ') || (str[i] == '\t'); i++);
-	if ((str[i] == '\n') || (str[i] == '\0'))
-		return 0;
-	else
-		return -1;
-}
+                    for (k = 80; k < 100; ++k) {
+                        if (memory[k] == operation[numbSig[i] - 1])
+                            pred = k;
+                        if (memory[k] == operation[numbSig[i] + 1])
+                            fol = k;
+                    }
 
-int _test_argv(char *argv[])
-{
-	char *ptr1;
-	
-	ptr1 = strrchr(argv[2], '.');
-	if ((strcmp(ptr1, ".o") != 0))
-		return -1;
-	else
-		return 0;
-}
+                    if (operation[numbSig[i] - 1] == ')') {
+                        pred = posSum;
+                        posSum++;
+                    }
+                    if (operation[numbSig[i] + 1] == '(') {
+                        fol = posSum;
+                        posSum++;
+                    }
+                    if (operation[numbSig[i] - 1] == 'x') {
+                        for (k = numbSig[i] - 1; k > start; --k) {
+                            if (operation[k] != 'x') {
+                                int r = operation[k] - '0';
+                                r += (operation[k - 1] - '0') * 10;
+                                pred = r;
+                                break;
+                            }
+                        }
+                    }
+                    if (operation[numbSig[i] + 1] == 'x') {
+                        for (k = numbSig[i] + 1; k < end; ++k) {
+                            if (operation[k] != 'x') {
+                                int r = (operation[k] - '0') * 10;
+                                r += (operation[k + 1] - '0');
+                                fol = r;
+                                break;
+                            }
+                        }
+                    }
+                    if (operation[numbSig[i] - 1] >= '0' && operation[numbSig[i] - 1] <= '9') {
+                        int r = 0;
+                        for (k = numbSig[i] - 1; k >= start; --k) {
+                            if (operation[k] < '0' || operation[k] > '9') {
+                                break;
+                            }
+                        }
+                        for (k++; k <= end; ++k) {
+                            if (operation[k] < '0' || operation[k] > '9') {
+                                break;
+                            }
+                            r = r * 10 + (operation[k] - '0');
+                        }
+                        if (chiss[r] != -1) {
+                            pred = chiss[r];
+                        } else {
+                            for (k = 60; k < 100; ++k) {
+                                if (memory[k] == '0') break;
+                            }
+                            fprintf(out, "%c%c = +%c%c\n", (char) (k / 10) + '0',
+                                    (char) (k % 10) + '0', (char) (r / 10) + '0', (char) (r % 10) + '0');
+                            chiss[r] = k;
+                            pred = k;
+                            memory[k] = 'q';
+                        }
 
-int is_value(char *str)
-{
-	if ((str[0] >= 'A') && (str[0] <= 'Z')) {
-		if (str[1] == '\0')
-			return 0;
-		else
-			return -1;
-	}
-	else
-		return -1;
-}
+                    }
+                    if (operation[numbSig[i] + 1] >= '0' && operation[numbSig[i] + 1] <= '9') {
+                        int r = 0;
+                        for (k = numbSig[i] + 1; k <= end; ++k) {
+                            if (operation[k] < '0' || operation[k] > '9') {
+                                break;
+                            }
+                            r = r * 10 + (operation[k] - '0');
+                        }
+                        if (chiss[r] != -1) {
+                            fol = chiss[r];
+                        } else {
+                            for (k = 60; k < 100; ++k) {
+                                if (memory[k] == '0') break;
+                            }
+                            fprintf(out, "%c%c = +%c%c\n", (char) (k / 10) + '0',
+                                    (char) (k % 10) + '0', (char) (r / 10) + '0', (char) (r % 10) + '0');
+                            chiss[r] = k;
+                            fol = k;
+                            memory[k] = 'q';
+                        }
+                    }
+                    if (i - 1 >= 0) {
+                        if (masSig[i - 1] == '*' || masSig[i - 1] == '/') {
+                            pred = pos;
+                            pos++;
+                        }
+                    }
+                    if (i + 1 < 5) {
+                        if (masSig[i + 1] == '*' || masSig[i + 1] == '/') {
+                            fol = pos;
+                            pos++;
+                        }
+                    }
+                    fprintf(out, "%c%c LOAD %c%c\n", (char) (numLine / 10) + '0',
+                            (char) (numLine % 10) + '0', (char) (pred / 10) + '0', (char) (pred % 10) + '0');
+                    memory[numLine] = 'q';
+                    numLine++;
+                    if (masSig[i] == '+') {
+                        fprintf(out, "%c%c ADD %c%c\n", (char) (numLine / 10) + '0',
+                                (char) (numLine % 10) + '0', (char) (fol / 10) + '0', (char) (fol % 10) + '0');
+                        memory[numLine] = 'q';
+                        numLine++;
+                    } else {
+                        fprintf(out, "%c%c SUB %c%c\n", (char) (numLine / 10) + '0',
+                                (char) (numLine % 10) + '0', (char) (fol / 10) + '0', (char) (fol % 10) + '0');
+                        memory[numLine] = 'q';
+                        numLine++;
+                    }
+                    numSgs--;
+                    if (operation[numbSig[i] + 1] == '(') {
+                        for (k = i + 1; k < signs; ++k) {
+                            if (operation[numbSig[k] + 2] == ')')
+                                break;
+                        }
+                        i = k;
+                    }
+                    i++;
 
-int get_var_addr(char c)
-{
-	if ((c >= 'A') && (c <= 'Z')) {
-		if (val_table[c-'A'] < 0) {
-			val_table[c-'A'] = val_pos;
-            structmemory[val_pos].is_val = 1;
-            structmemory[val_pos].command = 0;
-			val_pos--;
-		}
-		return val_table[c-'A'];
-	}
-	else
-		return -1;
-}
-
-int add_const(int n)
-{
-    structmemory[val_pos].is_val = 1;
-    structmemory[val_pos].command = n;
-	val_pos--;
-	return val_pos+1;
-}
-
-void add_code(int command, int operand)
-{
-    structmemory[code_pos].is_val = 0;
-    structmemory[code_pos].command = command;
-    structmemory[code_pos].operand = operand;
-	code_pos++;
-}
-
-int get_cache_addr(int n)
-{
-	if (stack_addr[n] < 0) {
-		stack_addr[n] = val_pos;
-        structmemory[code_pos].is_val = 1;
-        structmemory[code_pos].command = 0;
-		val_pos--;
-	}
-	return stack_addr[n];
-}
-
-void rpn_pars(char *rpn, int val)
-{
-	int i = 0;
-	int depth = 0;
-	int addr;
-	int st1, st2;
-	
-	while (rpn[i] != '\0') {
-		if ((rpn[i] >= 'A') && (rpn[i] <= 'Z')) {
-			addr = get_cache_addr(depth);
-			add_code(_LOAD, get_var_addr(rpn[i]));
-			add_code(_STORE, addr);
-			depth++;
-		}
-		if ((rpn[i] == '+') || (rpn[i] == '-') || (rpn[i] == '*') || (rpn[i] == '/')) {
-			if (depth < 2) {
-				perror("Uncorrect LET statement\n");
-				exit(1);
-			}
-			st1 = get_cache_addr(depth - 1);
-			st2 = get_cache_addr(depth - 2);
-			add_code(_LOAD, st1);
-			switch (rpn[i]) {
-				case '+':
-					add_code(_ADD, st2);
-					break;
-				
-				case '-':
-					add_code(_SUB, st2);
-					break;
-				
-				case '/':
-					add_code(_DIVIDE, st2);
-					break;
-				
-				case '*':
-					add_code(_MUL, st2);
-					break;
-			}
-			add_code(_STORE, st2);
-			depth--;
-		}
-		i++;
-	}
-	if (depth != 1) {
-		perror("Uncorrect LET statement\n");
-		exit(1);
-	}
-	addr = get_cache_addr(0);
-	add_code(_STORE, val);
-}
-
-int parse_line(char *str, int key_w)
-{
-	char *ptr;
-	char token[256];
-	char rpn[256];
-	int readen, label;
-	int if_val1, if_val2; // Адресс первой и второй переменной логического выр.
-	int if_jmp, num;
-	char sign;
-	int keyw;
-	int val; // LET val
-	
-	switch (key_w) {
-		case KEYW_INPUT:
-			ptr = cpy_token(token, str);
-			if ((!srt_is_empty(ptr)) && (!is_value(token))) {
-				add_code(_READ, get_var_addr(token[0])); // READ
-			}
-			else {
-				perror("Not a valid value\n");
-				exit(1);
-			}
-			break;
-		
-		case KEYW_OUTPUT:
-			ptr = cpy_token(token, str);
-			if ((!srt_is_empty(ptr)) && (!is_value(token))) {
-				add_code(_WRITE, get_var_addr(token[0])); // WRITE
-			}
-			else {
-				perror("Not a valid value\n");
-				exit(1);
-			}
-			break;
-		
-		case KEYW_GOTO:
-			readen = sscanf(str, "%d", &label);
-			if (readen == 1) {
-				int addr;
-				
-				addr = find_label(label);
-				if (addr < 0) {
-					perror("Label not found!\n");
-					exit(1);
-				}
-				add_code(_JUMP, addr); // JUMP
-			}
-			else  {
-				perror("Not a valid value\n");
-				exit(1);
-			}
-			break;
-		
-		case KEYW_END:
-			add_code(_HALT, 0); // HALT
-			break;
-		
-		case KEYW_IF:
-			ptr = cpy_token(token, str);
-			if (is_value(token) == 0) {
-				if_val1 = get_var_addr(token[0]);
-			}
-			else if (sscanf(token, "%d", &num) == 1) {
-				if_val1 = add_const(num);
-			}
-			else {
-				perror("Not a value or number!\n");
-				exit(1);
-			}
-			
-			ptr = cpy_token(token, ptr);
-			if (strcmp(token, "<") == 0)
-				sign = '<';
-			else if (strcmp(token, ">") == 0)
-				sign = '>';
-			else if (strcmp(token, "=") == 0)
-				sign = '=';
-			else {
-				perror("Unknown logical operation!\n");
-				exit(1);
-			}
-			
-			ptr = cpy_token(token, ptr);
-			if (is_value(token) == 0) {
-				if_val2 = get_var_addr(token[0]);
-			}
-			else if (sscanf(token, "%x", &num) == 1) {
-				if_val2 = add_const(num);
-			}
-			else {
-				perror("Not a value or number!\n");
-				exit(1);
-			}
-			
-			switch (sign) {
-				case '>':
-					add_code(_LOAD, if_val1);
-					add_code(_SUB, if_val2);
-					add_code(_JNEG, code_pos + 2);
-					break;
-				
-				case '<':
-					add_code(_LOAD, if_val2);
-					add_code(_SUB, if_val1);
-					add_code(_JNEG, code_pos + 2);
-					break;
-				
-				case '=':
-					add_code(_LOAD, if_val1);
-					add_code(_SUB, if_val2);
-					add_code(_JZ, code_pos + 2);
-					break;
+                    while (i < signs) {
+                        if (masSig[i] == '+' || masSig[i] == '-') {
+                            for (k = 80; k < 100; ++k) {
+                                if (memory[k] == operation[numbSig[i] + 1])
+                                    fol = k;
+                            }
+                            if (operation[numbSig[i] + 1] == '(') {
+                                fol = posSum;
+                                posSum++;
+                            }
+                            if (operation[numbSig[i] + 1] == 'x') {
+                                for (k = numbSig[i] + 1; k < end; ++k) {
+                                    if (operation[k] != 'x') {
+                                        int r = (operation[k] - '0') * 10;
+                                        r += (operation[k + 1] - '0');
+                                        fol = r;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (operation[numbSig[i] + 1] >= '0' && operation[numbSig[i] + 1] <= '9') {
+                                int r = 0;
+                                for (k = numbSig[i] + 1; k <= end; ++k) {
+                                    if (operation[k] < '0' || operation[k] > '9') {
+                                        break;
+                                    }
+                                    r = r * 10 + (operation[k] - '0');
+                                }
+                                if (chiss[r] != -1) {
+                                    fol = chiss[r];
+                                } else {
+                                    for (k = 60; k < 100; ++k) {
+                                        if (memory[k] == '0') break;
+                                    }
+                                    fprintf(out, "%c%c = +%c%c\n", (char) (k / 10) + '0',
+                                            (char) (k % 10) + '0', (char) (r / 10) + '0', (char) (r % 10) + '0');
+                                    chiss[r] = k;
+                                    fol = k;
+                                    memory[k] = 'q';
+                                }
+                            }
+                            if (i + 1 < 6) {
+                                if (masSig[i + 1] == '*' || masSig[i + 1] == '/') {
+                                    fol = pos;
+                                    pos++;
+                                }
+                            }
+                            if (masSig[i] == '+') {
+                                fprintf(out, "%c%c ADD %c%c\n", (char) (numLine / 10) + '0',
+                                        (char) (numLine % 10) + '0', (char) (fol / 10) + '0', (char) (fol % 10) + '0');
+                                memory[numLine] = 'q';
+                                numLine++;
+                            } else {
+                                fprintf(out, "%c%c SUB %c%c\n", (char) (numLine / 10) + '0',
+                                        (char) (numLine % 10) + '0', (char) (fol / 10) + '0', (char) (fol % 10) + '0');
+                                memory[numLine] = 'q';
+                                numLine++;
+                            }
+                            numSgs--;
+                        }
+                        i++;
+                    }
+                }
             }
-			if_jmp = code_pos + 1;
-			add_code(_JUMP, 0);
-			ptr = cpy_token(token, ptr);
-			keyw = get_keyword_code(token);
-			if (keyw < 0) {
-				perror("Unknown operator!\n");
-				exit(1);
-			}
-			if (keyw == KEYW_IF) {
-				perror("Multiple if!\n");
-				exit(1);
-			}
-			parse_line(ptr, keyw);
-            structmemory[if_jmp].operand = code_pos;
-			break;
-			
-			case KEYW_LET:
-				ptr = cpy_token(token, str);
-				if (!is_value(token)) {
-					val = get_var_addr(token[0]);
-				}
-				else {
-					perror("Not a valid value\n");
-					exit(1);
-				}
-				ptr = cpy_token(token, ptr);
-				if (strcmp(token, "=") != 0) {
-					perror("Uncorrect LET statement!\n");
-					exit(1);
-				}
-				translate_to_rpn(rpn, ptr);
-				rpn_pars(rpn, val);
-				break;
-        default:break;
+        }
     }
-	return 0;
+    int l = 0;
+
+    for (l = start; l < end; ++l) {
+        if (operation[l] == '=') {
+            if (signs == 0) {
+                int g = 0;
+
+                for (g = 80; g < 100; g++) {
+                    if (memory[g] == operation[l - 1]) {
+                        break;
+                    }
+                }
+                if (operation[l + 1] >= '0' && operation[l + 1] <= '9') {
+                    fprintf(out, "%c%c = +%c%c\n", (char) (g / 10) + '0',
+                            (char) (g % 10) + '0', operation[l + 1], operation[l + 2]);
+                    return 0;
+                } else {
+                    int h = 0;
+
+                    for (h = 80; h < 100; ++h) {
+                        if (memory[h] == operation[l + 1]) {
+                            break;
+                        }
+                    }
+                    fprintf(out, "%c%c LOAD %c%c\n", (char) (numLine / 10) + '0',
+                            (char) (numLine % 10) + '0', (char) (h / 10) + '0', (char) (h % 10) + '0');
+                    numLine++;
+                    fprintf(out, "%c%c STORE %c%c\n", (char) (numLine / 10) + '0',
+                            (char) (numLine % 10) + '0', (char) (g / 10) + '0', (char) (g % 10) + '0');
+                    numLine++;
+                    return 0;
+                }
+            }
+
+            int g = 0;
+
+            for (g = 80; g < 100; g++) {
+                if (memory[g] == operation[l - 1]) {
+                    fprintf(out, "%c%c STORE %c%c\n", (char) (numLine / 10) + '0',
+                            (char) (numLine % 10) + '0', (char) (g / 10) + '0', (char) (g % 10) + '0');
+                    memory[numLine] = 'q';
+                    numLine++;
+                }
+            }
+            return 0;
+        }
+    }
+
+    for (l = 71; l < 100; ++l) {
+        if (memory[l] == '0') {
+            posSum = l;
+            memory[l] = 'q';
+            break;
+        }
+    }
+    fprintf(out, "%c%c STORE %c%c\n", (char) (numLine / 10) + '0',
+            (char) (numLine % 10) + '0', (char) (posSum / 10) + '0', (char) (posSum % 10) + '0');
+    memory[numLine] = 'q';
+    numLine++;
+    return posSum;
 }
 
-int basic(int argc, char *argv[])
+int determCommand(char *com)
 {
-	FILE *input, *output;
-	char asm_filename[256];
-	char line[256], keyw_str[256];
-	char *str;
-	int i;
-	int label, keyw;
-	
-	if (argc != 3) {
-		perror("Incorrect arguments!\n");
-		exit(1);
-	}
-	if (_test_argv(argv) != 0) {
-		perror("Incorrect arguments!\n");
-		exit(1);
-	}
-	strcpy(asm_filename, argv[1]);
-	strcat(asm_filename, ".sa");
-	if ((input = fopen(argv[1], "rb")) == NULL) {
-		fprintf(stderr, "Cannot open file:%s", argv[2]);
-		exit(1);
-	}
-	if ((output = fopen(asm_filename, "wb")) == NULL) {
-		fprintf(stderr, "Cannot open file:%s", asm_filename);
-		exit(1);
-	}
-	
-	for (i = 0; i < 26; i++)
-		val_table[i] = -1;
-	for (i = 0; i < 100; i++)
-		stack_addr[i] = -1;
-	while (fgets(line, 256, input)) {
-		if (srt_is_empty(line) == 0)
-			continue;
-		str = get_label_and_keyw(line, &label, keyw_str);
-		if (str == NULL) {
-			perror("Unknown operator!\n");
-			exit(1);
-		}
-		keyw = get_keyword_code(keyw_str);
-		if (keyw < 0) {
-			perror("Unknown operator!\n");
-			exit(1);
-		}
-		labels[label_pos].label = label;
-		labels[label_pos].pos = code_pos;
-		label_pos++;
-		parse_line(str, keyw);
-	}
-	saveAsm(output);
-	fclose(output);
-	fclose(input);
-	char *arg[3];
-	arg[2] = asm_filename;
-	arg[1] = argv[2];
-	int flg = asembler(3, arg);
-	return flg;
+
+    if (strcmp(com, "REM") == 0) {
+
+        return REM;
+
+    }
+
+    if (strcmp(com, "INPUT") == 0) {
+
+        return _READ;
+
+    }
+
+    if (strcmp(com, "OUTPUT") == 0) {
+
+        return _WRITE;
+
+    }
+
+    if (strcmp(com, "GOTO") == 0) {
+
+        return _JUMP;
+
+    }
+
+    if (strcmp(com, "IF") == 0) {
+
+        return _JNEG;
+
+    }
+
+    if (strcmp(com, "LET") == 0) {
+
+        return LET;
+
+    }
+
+    if (strcmp(com, "END") == 0) {
+
+        return _HALT;
+
+    }
+
+    return ERR;
+
+}
+
+int parsLine(char *line)
+{
+
+    int index = 0;
+
+    int i = 0;
+
+    while (line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
+
+        index = index * 10 + (line[i] - '0');
+
+        ++i;
+
+    }
+
+    if (index == wait) {
+
+        long int pos = ftell(out);
+
+        fseek(out, jp, 0);
+
+        fprintf(out, "%c%c JUMP %c%c\n", (char)(numWait / 10) + '0',
+
+                (char)(numWait % 10) + '0', (char)(numLine / 10) + '0', (char)(numLine % 10) + '0');
+
+        fseek(out, pos, 0);
+
+        wait = -1;
+
+        numWait = -1;
+
+    }
+
+    ++i;
+
+    char com[10];
+
+    int j = 0;
+
+    while (line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
+
+        com[j] = line[i];
+
+        ++j;
+
+        ++i;
+
+    }
+
+    com[j] = '\0';
+
+    ++i;
+
+    j = 0;
+
+    char *operation = NULL;
+
+    char *comIf = NULL;
+
+    char *opIf = NULL;
+
+    if (strcmp(com, "END") != 0) {
+
+        operation = malloc(sizeof(char) * 20);
+
+        while (line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
+
+            operation[j] = line[i];
+
+            ++j;
+
+            ++i;
+
+        }
+
+        operation[j] = '\0';
+
+        ++i;
+
+        if (strcmp(com, "IF") == 0) {
+
+            comIf = malloc(sizeof(char) * 10);
+
+            opIf = malloc(sizeof(char) * 20);
+
+            j = 0;
+
+            while (line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
+
+                comIf[j] = line[i];
+
+                ++j;
+
+                ++i;
+
+            }
+
+            ++i;
+
+            comIf[j] = '\0';
+
+            j = 0;
+
+            while (line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
+
+                opIf[j] = line[i];
+
+                ++j;
+
+                ++i;
+
+            }
+
+            opIf[j] = '\0';
+
+        }
+
+    }
+
+    int command = determCommand(com);
+
+    if (command == ERR) {
+
+        printf("ERROR: unknoun command\n");
+
+        return -1;
+
+    }
+
+    switch (command) {
+
+        case REM:
+
+            break;
+
+        case _READ:
+
+            memNumb[numLine] = index;
+
+            for (i = 91; i <= 100; ++i) {
+
+                if (memory[i] == '0') {
+
+                    memory[i] = operation[0];
+
+                    break;
+
+                }
+
+            }
+
+            fprintf(out, "%c%c READ %c%c\n", (char) (numLine / 10) + '0',
+
+                    (char) (numLine % 10) + '0', (char) (i / 10) + '0', (char) (i % 10) + '0');
+
+            memory[numLine] = 'q';
+
+            numLine++;
+
+            break;
+
+        case _WRITE:
+
+            memNumb[numLine] = index;
+
+            for (i = 91; i <= 100; ++i) {
+
+                if (memory[i] == operation[0]) {
+
+                    break;
+
+                }
+
+            }
+
+            fprintf(out, "%c%c WRITE %c%c\n", (char) (numLine / 10) + '0',
+
+                    (char) (numLine % 10) + '0', (char) (i / 10) + '0', (char) (i % 10) + '0');
+
+            memory[numLine] = 'q';
+
+            numLine++;
+
+            break;
+
+        case _JUMP:
+
+            memNumb[numLine] = index;
+
+            i = 0;
+
+            int n = 0;
+
+            while (operation[i] != '\0') {
+
+                n = n * 10 + (operation[i] - '0');
+
+                ++i;
+
+            }
+
+            if (n > index) {
+
+                jp = ftell(out);
+
+                wait = n;
+
+                fprintf(out, "00 JUMP 00\n");
+
+                numWait = numLine;
+
+                memory[numLine] = 'q';
+
+                numLine++;
+
+                break;
+
+            }
+
+            for (i = 0; i < 100; ++i) {
+
+                if (memNumb[i] == n)
+
+                    break;
+
+            }
+
+            fprintf(out, "%c%c JUMP %c%c\n", (char)(numLine / 10) + '0',
+
+                    (char)(numLine % 10) + '0', (char)(i / 10) + '0', (char)(i % 10) + '0');
+
+            memory[numLine] = 'q';
+
+            numLine++;
+
+            break;
+
+        case _JNEG:
+
+            memNumb[numLine] = index;
+
+            int one = 0;
+
+            int two = 0;
+
+            for (i = 80; i < 100; ++i) {
+
+                if (memory[i] == operation[0]) {
+
+                    one = i;
+
+                    break;
+
+                }
+
+            }
+
+            if (operation[2] >= '0' && operation[2] <= '9') {
+
+                for (i = 60; i < 100; ++i) {
+
+                    if (memory[i] == '0') {
+
+                        two = i;
+
+                        break;
+
+                    }
+
+                }
+
+                fprintf(out, "%c%c = +%c%c\n", (char) (two / 10) + '0',
+
+                        (char) (two % 10) + '0', operation[2], operation[3]);
+
+                memory[two] = 'q';
+
+            } else {
+
+                for (i = 80; i < 100; ++i) {
+
+                    if (memory[i] == operation[2]) {
+
+                        two = i;
+
+                        break;
+
+                    }
+
+                }
+
+            }
+
+            if (operation[1] == '>') {
+
+                fprintf(out, "%c%c LOAD %c%c\n", (char) (numLine / 10) + '0',
+
+                        (char) (numLine % 10) + '0', (char) (two / 10) + '0', (char) (two % 10) + '0');
+
+                memory[numLine] = 'q';
+
+                numLine++;
+
+                fprintf(out, "%c%c SUB %c%c\n", (char) (numLine / 10) + '0',
+
+                        (char) (numLine % 10) + '0', (char) (one / 10) + '0', (char) (one % 10) + '0');
+
+                memory[numLine] = 'q';
+
+                numLine++;
+
+            } else {
+
+                fprintf(out, "%c%c LOAD %c%c\n", (char) (numLine / 10) + '0',
+
+                        (char) (numLine % 10) + '0', (char) (one / 10) + '0', (char) (one % 10) + '0');
+
+                memory[numLine] = 'q';
+
+                numLine++;
+
+                fprintf(out, "%c%c SUB %c%c\n", (char) (numLine / 10) + '0',
+
+                        (char) (numLine % 10) + '0', (char) (two / 10) + '0', (char) (two % 10) + '0');
+
+                memory[numLine] = 'q';
+
+                numLine++;
+
+            }
+
+            int pos = 0;
+
+            for (i = 40; i < 100; ++i) {
+
+                if (memory[i] == '0') {
+
+                    pos = i;
+
+                    break;
+
+                }
+
+            }
+
+            fprintf(out, "%c%c JNEG %c%c\n", (char) (numLine / 10) + '0',
+
+                    (char) (numLine % 10) + '0', (char) (pos / 10) + '0', (char) (pos % 10) + '0');
+
+            memory[numLine] = 'q';
+
+            numLine++;
+
+            int oldLine = numLine;
+
+            numLine = pos;
+
+            int q = 0;
+
+            i = 0;
+
+            while (q < 3) {
+
+                if (line[i] == ' ' || line[i] == '\t' || line[i] == '\n') {
+
+                    q++;
+
+                }
+
+                i++;
+
+            }
+
+            line[i - 3] = (char) (index / 10) + '0';
+
+            line[i - 2] = (char) (index % 10) + '0';
+
+            int reop = parsLine(line + i - 3);
+
+            fprintf(out, "%c%c JUMP %c%c\n", (char) (numLine / 10) + '0',
+
+                    (char) (numLine % 10) + '0', (char) (oldLine / 10) + '0', (char) (oldLine % 10) + '0');
+
+            memory[oldLine] = 'q';
+
+            memory[numLine] = 'q';
+
+            numLine = oldLine;
+
+            break;
+
+        case LET:
+
+            memNumb[numLine] = index;
+
+            int f = 1;
+
+            for (i = 50; i < 100; ++i) {
+
+                if (memory[i] == operation[0])
+
+                    f = 0;
+
+            }
+
+            if (f) {
+
+                for (i = 91; i <= 100; ++i) {
+
+                    if (memory[i] == '0') {
+
+                        memory[i] = operation[0];
+
+                        break;
+
+                    }
+
+                }
+
+            }
+
+            j = 0;
+
+            int op = 0;
+
+            int cl = 0;
+
+            int NUMB_SCOB = 1;
+
+            while (operation[j] != '\0') {
+
+                if (operation[j] == '(')
+
+                    NUMB_SCOB++;
+                ++j;
+
+            }
+
+            int *scobOpen = malloc(sizeof(int) * NUMB_SCOB);
+
+            int *scobClose = malloc(sizeof(int) * NUMB_SCOB);
+
+            while (operation[j] != '\0') {
+
+                if (operation[j] == '(') {
+
+                    scobOpen[op] = j;
+
+                    op++;
+
+                }
+
+                if (operation[j] == ')') {
+
+                    scobClose[cl] = j;
+
+                    cl++;
+
+                }
+
+                j++;
+
+            }
+
+            if (op != cl) {
+
+                printf("ERROR: BREKITS");
+
+                return -1;
+
+            }
+
+            int k = 0;
+
+            int ps = 0;
+
+            for (k = op - 1; k >= 0; --k) {
+
+                ps = calculation(operation, scobOpen[k] + 1, scobClose[k] - 1);
+
+                operation[scobOpen[k]] = 'x';
+
+                operation[scobOpen[k] + 1] = (char) (ps / 10) + '0';
+
+                operation[scobOpen[k] + 2] = (char) (ps % 10) + '0';
+
+                for (i = scobOpen[k] + 3; i <= scobClose[k]; ++i) {
+
+                    operation[i] = 'x';
+
+                }
+
+            }
+
+            calculation(operation, 0, j - 1);
+
+            break;
+
+        case _HALT:
+
+            fprintf(out, "%c%c HALT 00\n", (char) (numLine / 10) + '0',
+
+                    (char) (numLine % 10) + '0');
+
+            memory[numLine] = 'q';
+
+            numLine++;
+
+            break;
+
+    }
+
+    return 0;
+
+}
+
+int basic(int args, char *argv[])
+{
+
+    if (args < 3) {
+
+        printf("Error: need more arguments\n");
+
+        return -1;
+
+    }
+
+    int i = 0;
+
+    for (i = 0; i < 100; ++i) {
+
+        memory[i] = '0';
+
+        memNumb[i] = 0;
+
+    }
+
+    char *fileNameIn = malloc(sizeof(char) * 20);
+
+    char *fileNameOut = malloc(sizeof(char) * 20);
+
+    asProg = malloc(sizeof(char) * 500);
+
+    strcpy(fileNameIn, argv[1]);
+
+    strcpy(fileNameOut, argv[2]);
+
+    FILE *in = fopen(fileNameIn, "r");
+
+    out = fopen(fileNameOut, "w+");
+
+    if (in == NULL) {
+
+        printf("ERROR: Can not open file\n");
+
+    }
+
+    char *buf = malloc(sizeof(char) * 50);
+
+//int i = 0;
+
+    while (!feof(in)) {
+
+        fgets(buf, 50, in);
+
+        int reop = parsLine(buf);
+
+        if (reop == REOP) {
+
+            fclose(in);
+
+            fopen(fileNameIn, "r");
+
+        }
+
+        if (reop == ERR) {
+
+            return -1;
+
+        }
+
+    }
+
+    fclose(in);
+
+    fclose(out);
+
+    return 0;
+
 }

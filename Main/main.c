@@ -145,6 +145,7 @@ int main(int argc, char **argv)
         if (key_esc == key) break;
     }
     q_free();
+    //basic(argc, argv);
     mt_clscr();
     if (rk_mytermstore()) {
         fprintf(stderr, "Cannot restore\n");

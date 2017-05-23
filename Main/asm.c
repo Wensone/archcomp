@@ -1,201 +1,253 @@
 #include "head/asm.h"
 
 
-int str2sc_word(char *str, int *value)
-{
-    int pos = 0, plus = 1;
-    int n;
-    int byte1, byte2;
+int memory[100];
 
-    if (str[0] == '+') {
-        plus = 0;
-        pos = 1;
+void memoryInit() {
+
+    int i = 0;
+
+    for (i = 0; i < 100; ++i) {
+
+        memory[i] = 0;
+
     }
-    if (sscanf(str + pos, "%x", &n) != 1)
-        return -1;
-    byte1 = n & 0xFF;
-    byte2 = n >> 8;
-    if ((byte1 > 0x7F) || (byte2 > 0x7F))
-        return -1;
-    *value = byte1 | (byte2 << 7) | (plus << 14);
+
+}
+
+int memoryWrite(char *filename) {
+
+    FILE *out = fopen(filename, "wb");
+
+    if (out == NULL)
+
+        return 1;
+
+    fwrite(memory, sizeof(int), 100, out);
+
+    fclose(out);
+
     return 0;
+
 }
 
-int str2command(char *str)
+
+int parsLine(char *line)
 {
-    int ret;
 
-    if (strcmp(str, "READ") == 0)
-        ret = 0x10;
-    else if (strcmp(str, "WRITE") == 0)
-        ret = 0x11;
-    else if (strcmp(str, "LOAD") == 0)
-        ret = 0x20;
-    else if (strcmp(str, "STORE") == 0)
-        ret = 0x21;
-    else if (strcmp(str, "ADD") == 0)
-        ret = 0x30;
-    else if (strcmp(str, "SUB") == 0)
-        ret = 0x31;
-    else if (strcmp(str, "DIVIDE") == 0)
-        ret = 0x32;
-    else if (strcmp(str, "MUL") == 0)
-        ret = 0x33;
-    else if (strcmp(str, "JUMP") == 0)
-        ret = 0x40;
-    else if (strcmp(str, "JNEG") == 0)
-        ret = 0x41;
-    else if (strcmp(str, "JZ") == 0)
-        ret = 0x42;
-    else if (strcmp(str, "HALT") == 0)
-        ret = 0x43;
-    else if (strcmp(str, "JNP") == 0)
-        ret = 0x59;
-    else
-        ret = -1;
+    //sc_memoryInit();
 
-    return ret;
-}
+    int index = 0;
 
-int pars_line(char *str, int *addr, int *value)
-{
-    char *ptr;
-    int operand, command;
-    int flag_assign = 0;
+    int command = 0;
 
-    ptr = strchr(str, ';');
-    if (ptr != NULL)
-        *ptr = '\0';
-    ptr = strchr(str, '\n');
-    if (ptr != NULL)
-        *ptr = '\0';
-    ptr = strtok(str, " \t");
-    if (ptr == NULL)
-        return EMPTY_STR;
-    if (sscanf(ptr, "%d", addr) != 1) {
-        return ERR_ARG1;
+    int operand = 0;
+
+    int value = 0;
+
+    int i = 0;
+
+    while (line[i] != ' ' && line[i] != '\t' && line[i] != '\0') {
+
+        index = index * 10 + (line[i] - '0');
+
+        ++i;
+
     }
-    if ((*addr < 0) || (*addr >= SIZE))
-        return ERR_ARG1;
-    ptr = strtok(NULL, " \t");
-    if (ptr == NULL)
-        return ERR_FEW;
-    else if (strcmp(ptr, "=") == 0)
-        flag_assign = 1;
-    else {
-        command = str2command(ptr);
-        if (command == -1)
-            return ERR_ARG2;
+
+    ++i;
+
+    char com[10];
+
+    int j = 0;
+
+    while (line[i] != ' ' && line[i] != '\t' && line[i] != '\0') {
+
+        com[j] = line[i];
+
+        ++j;
+
+        ++i;
+
     }
-    ptr = strtok(NULL, " \t");
-    if (ptr == NULL)
-        return ERR_FEW;
-    if (!flag_assign) {
-        if (sscanf(ptr, "%d", &operand) != 1) {
-            return ERR_ARG3;
-        }
-    } else {
-        if (str2sc_word(ptr, value) == -1) {
-            return ERR_ARG3;
-        }
+
+    com[j] = '\0';
+
+    ++i;
+
+    while (line[i] != ' ' && line[i] != '\t' && line[i] != '\0') {
+
+        if (line[i] != '+')
+
+            operand = operand * 10 + (line[i] - '0');
+
+        ++i;
+
     }
-    if ((operand < 0) || (operand >= SIZE))
-        return ERR_ARG3;
-    ptr = strtok(NULL, " \t");
-    if (ptr != NULL)
-        return ERR_MANY;
-    if (!flag_assign) {
-        sc_commandEncode(command, operand, value);
+
+    if (strcmp(com, "READ") == 0) {
+
+        command = 10;
+
     }
-    return 0;
-}
 
-void print_error(char *line, int line_cnt, int err)
-{
-    switch (err) {
-        case ERR_ARG1:
-            fprintf(stderr, "%d: first argument isn't a number\n", line_cnt);
-            break;
+    if (strcmp(com, "WRITE") == 0) {
 
-        case ERR_ARG2:
-            fprintf(stderr, "%d: unknown command\n", line_cnt);
-            break;
+        command = 11;
 
-        case ERR_ARG3:
-            fprintf(stderr, "%d: third argument isn't a number\n", line_cnt);
-            break;
-
-        case ERR_FEW:
-            fprintf(stderr, "%d: should be three aguments\n", line_cnt);
-            break;
-
-        case ERR_MANY:
-            fprintf(stderr, "%d: too many arguments\n", line_cnt);
-            break;
     }
-    fprintf(stderr, "%s", line);
-}
 
-int test_argv_(char *argv[])
-{
-    char *ptr1, *ptr2;
+    if (strcmp(com, "LOAD") == 0) {
 
-    ptr1 = strrchr(argv[1], '.');
-    ptr2 = strrchr(argv[2], '.');
-    if ((strcmp(ptr1, ".o") != 0) || (strcmp(ptr2, ".sa") != 0))
-        return -1;
-    else
+        command = 20;
+
+    }
+
+    if (strcmp(com, "STORE") == 0) {
+
+        command = 21;
+
+    }
+
+    if (strcmp(com, "ADD") == 0) {
+
+        command = 30;
+
+    }
+
+    if (strcmp(com, "SUB") == 0) {
+
+        command = 31;
+
+    }
+
+    if (strcmp(com, "DIVIDE") == 0) {
+
+        command = 32;
+
+    }
+
+    if (strcmp(com, "MUL") == 0) {
+
+        command = 33;
+
+    }
+
+    if (strcmp(com, "JUMP") == 0) {
+
+        command = 40;
+
+    }
+
+    if (strcmp(com, "JNEG") == 0) {
+
+        command = 41;
+
+    }
+
+    if (strcmp(com, "JZ") == 0) {
+
+        command = 42;
+
+    }
+
+    if (strcmp(com, "HALT") == 0) {
+
+        command = 43;
+
+    }
+
+    if (strcmp(com, "=") == 0) {
+
+        command = 0;
+
+        memory[index - 1] = operand;
+
         return 0;
+
+    }
+
+    int e = sc_commandEncode(command, operand, &value);
+
+    if (e == -1) {
+
+        printf("ERROR\n");
+
+        return -1;
+
+    }
+
+    memory[index - 1] = value;
+
+    return 0;
+
 }
 
-int asembler(int argc, char *argv[])
+int main(int args, char *argv[])
 {
-    char buf[256], line[256];
-    char add_mem[SIZE];
-    FILE *input, *output;
-    int value, addr, line_cnt = 1;
-    int err;
-    int flag_err = 0;
 
-    if (argc != 3) {
-        perror("Incorrect arguments!\n");
-        exit(1);
-    }
-    if (test_argv_(argv) != 0) {
-        perror("Incorrect arguments!\n");
-        exit(1);
-    }
-    if ((output = fopen(argv[1], "wb")) == NULL) {
-        fprintf(stderr, "Cannot open file:%s", argv[1]);
-        exit(1);
-    }
-    if ((input = fopen(argv[2], "rb")) == NULL) {
-        fprintf(stderr, "Cannot open file:%s", argv[2]);
-        exit(1);
+    //memoryInit();
+
+    char *fileNameIn = malloc(sizeof(char) * 20);
+
+    char *fileNameOut = malloc(sizeof(char) * 20);
+
+    if (args < 3) {
+
+        printf("Error: need more arguments\n");
+
+        return -1;
+
     }
 
-    memset(add_mem, 0, SIZE);
-    memset(ram, 0, SIZE * sizeof(int));
-    while (fgets(line, 256, input)) {
-        strcpy(buf, line);
-        err = pars_line(buf, &addr, &value);
-        if (err == 0) {
-            if (add_mem[addr] == 0) {
-                ram[addr] = value;
-            } else {
-                fprintf(stderr, "%d: Command with %d addres already exists\n%s", line_cnt, addr, line);
-                flag_err = 1;
+    strcpy(fileNameIn, argv[1]);
+
+    strcpy(fileNameOut, argv[2]);
+
+    FILE *in = fopen(fileNameIn, "r");
+
+    char buf[50];
+
+    int f = 0;
+
+    while (!feof(in)) {
+
+        int i = 0;
+
+        for (i = 0;; ++i) {
+
+            buf[i] = fgetc(in);
+
+            if (feof(in)) {
+
+                f = 1;
+
+                break;
+
             }
-        } else if (err < 0) {
-            print_error(line, line_cnt, err);
-            flag_err = 1;
+
+            if (buf[i] == '\n') {
+
+                buf[i] = '\0';
+
+                break;
+
+            }
+
         }
-        line_cnt++;
+
+        if (!f) {
+
+            parsLine(buf);
+
+        }
+
     }
-    if (flag_err == 0) {
-        fwrite(ram, 1, SIZE * sizeof(int), output);
-    }
-    fclose(input);
-    fclose(output);
+
+    memoryWrite(fileNameOut);
+
+    fclose(in);
+
     return 0;
+
 }
