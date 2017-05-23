@@ -19,6 +19,7 @@
 #define FLAG_M 0x4
 #define FLAG_T 0x8
 #define FLAG_E 0x10
+#define FLAG_PF 0x20
 
 int ram[SIZE];
 int Flags;

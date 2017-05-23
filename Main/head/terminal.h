@@ -7,6 +7,7 @@
 #include "../../lab4/head/rk.h"
 #include <signal.h>
 #include <sys/time.h>
+#include "basic.h"
 
 struct itimerval nval;
 struct {
@@ -68,5 +69,53 @@ int ALU(int operand, int value);
 void  sigReset(int signo);
 
 char *readString();
+
+int transl(char *com);
+
+int READ(int v);
+
+int WRITE(int v);
+
+int LOAD(int v);
+
+int STORE(int v);
+
+int cADD(int v);
+
+int SUB(int v);
+
+int DIVIDE(int v);
+
+int MUL(int v);
+
+int JUMP(int v);
+
+int JNEG(int v);
+
+int JZ(int v);
+
+int HALT(int v);
+
+int NOT(int v);
+
+int AND(int v);
+
+int OR(int v);
+
+int XOR(int v);
+
+int JNS(int v);
+
+int JC(int v);
+
+int JNC(int v);
+
+int JP(int v);
+
+int JNP(int v);
+
+int CHL(int v);
+
+int SHR(int v);
 
 #endif //ARCH_TERMINAL_H

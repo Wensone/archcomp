@@ -1,6 +1,6 @@
 #include "head/terminal.h"
 
-int main()
+int main(int argc, char **argv)
 {
     if (init_data()) {
         fprintf(stderr, "init_data\n");
@@ -74,10 +74,11 @@ int main()
                 char buff[32 + strlen(name)];
                 sprintf(buff, "Name file(l) : %s", name);
                 q_add(buff);
-                if (sc_memoryLoad(name)) {
-                    sprintf(buff, "File no exist : %s", name);
-                    q_add(buff);
-                };
+                if (transl(name))
+                    if (sc_memoryLoad(name)) {
+                        sprintf(buff, "File no exist : %s", name);
+                        q_add(buff);
+                    };
                 move((no_key));
                 free(name);
 
@@ -85,21 +86,14 @@ int main()
             }
             case (key_r) : {
                 sc_regSet(FLAG_T, 0);
-                //signal(SIGALRM, CU);
-                //alarm(0);
-                //setitimer(ITIMER_REAL, &nval, NULL);
-//                raise(SIGALRM);
                 break;
             }
             case (keyt) : {
                 sc_regSet(FLAG_T, 1);
-                //alarm(0);
-                //signal(SIGALRM, CU);
                 CU(0);
                 break;
             }
             case (key_i) : {
-//                sc_regSet(FLAG_T, 1);
                 raise(SIGUSR1);
                 break;
             }

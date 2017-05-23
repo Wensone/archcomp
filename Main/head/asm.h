@@ -23,6 +23,6 @@ void print_error(char *line, int line_cnt, int err);
 
 int test_argv_(char *argv[]);
 
-int main(int argc, char *argv[]);
+int asembler(int argc, char *argv[]);
 
 #endif //ARCH_ASM_H
