@@ -1,37 +1,6 @@
 #include "head/asm.h"
 
 
-int memory[100];
-
-void memoryInit() {
-
-    int i = 0;
-
-    for (i = 0; i < 100; ++i) {
-
-        memory[i] = 0;
-
-    }
-
-}
-
-int memoryWrite(char *filename) {
-
-    FILE *out = fopen(filename, "wb");
-
-    if (out == NULL)
-
-        return 1;
-
-    fwrite(memory, sizeof(int), 100, out);
-
-    fclose(out);
-
-    return 0;
-
-}
-
-
 int parsLine(char *line)
 {
 
@@ -87,81 +56,82 @@ int parsLine(char *line)
 
     if (strcmp(com, "READ") == 0) {
 
-        command = 10;
+        command = 0x10;
 
     }
 
     if (strcmp(com, "WRITE") == 0) {
 
-        command = 11;
+        command = 0x11;
 
     }
 
     if (strcmp(com, "LOAD") == 0) {
 
-        command = 20;
+        command = 0x20;
 
     }
 
     if (strcmp(com, "STORE") == 0) {
 
-        command = 21;
+        command = 0x21;
 
     }
 
     if (strcmp(com, "ADD") == 0) {
 
-        command = 30;
+        command = 0x30;
 
     }
 
     if (strcmp(com, "SUB") == 0) {
 
-        command = 31;
+        command = 0x31;
 
     }
 
     if (strcmp(com, "DIVIDE") == 0) {
 
-        command = 32;
+        command = 0x32;
 
     }
 
     if (strcmp(com, "MUL") == 0) {
 
-        command = 33;
+        command = 0x33;
 
     }
 
     if (strcmp(com, "JUMP") == 0) {
 
-        command = 40;
+        command = 0x40;
 
     }
 
     if (strcmp(com, "JNEG") == 0) {
 
-        command = 41;
+        command = 0x41;
 
     }
 
     if (strcmp(com, "JZ") == 0) {
 
-        command = 42;
+        command = 0x42;
 
     }
 
     if (strcmp(com, "HALT") == 0) {
 
-        command = 43;
+        command = 0x43;
 
     }
 
     if (strcmp(com, "=") == 0) {
 
-        command = 0;
+        command = 0x0;
+        sc_setData(operand, &operand);
 
-        memory[index - 1] = operand;
+        ram[index] = operand;
 
         return 0;
 
@@ -177,16 +147,16 @@ int parsLine(char *line)
 
     }
 
-    memory[index - 1] = value;
+    ram[index] = value;
 
     return 0;
 
 }
 
-int main(int args, char *argv[])
+int asembler(int args, char *argv[])
 {
 
-    //memoryInit();
+    sc_memoryInit();
 
     char *fileNameIn = malloc(sizeof(char) * 20);
 
@@ -244,7 +214,7 @@ int main(int args, char *argv[])
 
     }
 
-    memoryWrite(fileNameOut);
+    sc_memorySave(fileNameOut);
 
     fclose(in);
 

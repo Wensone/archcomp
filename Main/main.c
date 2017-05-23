@@ -146,6 +146,7 @@ int main(int argc, char **argv)
     }
     q_free();
     //basic(argc, argv);
+    asembler(argc, argv);
     mt_clscr();
     if (rk_mytermstore()) {
         fprintf(stderr, "Cannot restore\n");

@@ -560,7 +560,7 @@ int determCommand(char *com)
 
 }
 
-int parsLine(char *line)
+int _parsLine(char *line)
 {
 
     int index = 0;
@@ -937,7 +937,7 @@ int parsLine(char *line)
 
             line[i - 2] = (char) (index % 10) + '0';
 
-            int reop = parsLine(line + i - 3);
+            int reop = _parsLine(line + i - 3);
 
             fprintf(out, "%c%c JUMP %c%c\n", (char) (numLine / 10) + '0',
 
@@ -1125,7 +1125,7 @@ int basic(int args, char *argv[])
 
         fgets(buf, 50, in);
 
-        int reop = parsLine(buf);
+        int reop = _parsLine(buf);
 
         if (reop == REOP) {
 

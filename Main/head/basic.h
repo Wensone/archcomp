@@ -59,33 +59,7 @@ enum code_command {
 
 int basic(int argc, char *argv[]);
 
-int parse_line(char *str, int key_w);
 
-void rpn_pars(char *rpn, int val);
-
-int get_cache_addr(int n);
-
-void add_code(int command, int operand);
-
-int add_const(int n);
-
-int get_var_addr(char c);
-
-int is_value(char *str);
-
-int srt_is_empty(char *str);
-
-char *cpy_token(char *token, char *str);
-
-int is_delim(char c);
-
-int get_keyword_code(char *str);
-
-char *get_label_and_keyw(char *str, int *label, char *keyword);
-
-int find_label(int label);
-
-void saveAsm(FILE *file);
 
 
 #endif
